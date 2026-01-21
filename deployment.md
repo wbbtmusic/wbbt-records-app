@@ -11,7 +11,7 @@ Bu rehber, teknik terimlerden arındırılmış, sadece **Kopyala-Yapıştır** 
     git add .
     git commit -m "ilk yükleme"
     # GitHub'da yeni bir repo oluştur ve sana verdiği linki aşağıya koy:
-    git remote add origin https://github.com/SENIN-KULLANICI-ADIN/SENIN-REPON.git
+    git remote add origin https://github.com/wbbtmusic/wbbt-records-app.git
     git push -u origin main
     ```
 
@@ -29,8 +29,8 @@ sudo npm install -g pm2 tsx
 
 **Adım B: Projeyi Çek**
 ```bash
-# Kendi linkini yazmayı unutma!
-git clone https://github.com/SENIN-KULLANICI-ADIN/SENIN-REPON.git wbbt
+# Repo adresini değiştirmeyi unutma!
+git clone https://github.com/wbbtmusic/wbbt-records-app.git wbbt
 cd wbbt
 npm install
 npm run build

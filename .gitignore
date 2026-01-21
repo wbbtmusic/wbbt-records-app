@@ -21,15 +21,27 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Database (optional, usually local)
+# Database
 *.sqlite
 *.db
 server/database.sqlite
+server/wbbt.sqlite*
 
 # Logs
 logs
 *.log
 npm-debug.log*
+
+# Uploads
+server/uploads
+uploads
+*.jpg
+*.png
+*.mp3
+*.wav
+*.zip
+!public/**/*
+
 
 # OS
 Thumbs.db

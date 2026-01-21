@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -461,8 +462,51 @@ const initSchema = () => {
     `);
 };
 
-// Insert mock admin if not exists
+import bcrypt from 'bcryptjs'; // Imported for seeding admin
+
+// ... (rest of imports)
+
+// Initialize schema
+const initSchema = () => {
+    // ... (existing schema tables)
+    // ...
+};
+
+// Seed Admin Account
+const seedAdmin = () => {
+    const admin = db.prepare("SELECT * FROM users WHERE role = 'admin'").get();
+    if (!admin) {
+        console.log('🌱 Seeding Admin Account...');
+        const hashedPassword = bcrypt.hashSync('admin123', 10);
+        const adminUser = {
+            id: 'admin-1',
+            email: 'admin@wbbt.net',
+            password: hashedPassword,
+            firstName: 'Admin',
+            lastName: 'User',
+            artistName: 'WBBT Admin',
+            role: 'admin',
+            applicationStatus: 'APPROVED',
+            balance: 0
+        };
+
+        try {
+            const stmt = db.prepare(`
+                INSERT INTO users(id, email, password, first_name, last_name, artist_name, role, application_status, balance)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `);
+            stmt.run(adminUser.id, adminUser.email, adminUser.password, adminUser.firstName, adminUser.lastName, adminUser.artistName, adminUser.role, adminUser.applicationStatus, adminUser.balance);
+            console.log('✅ Admin Account Created: admin@wbbt.net / admin123');
+        } catch (error) {
+            console.error('❌ Failed to seed admin:', error);
+        }
+    }
+};
+
+// Execute Init and Seed
 initSchema();
+seedAdmin();
+
 
 // Migration: Add confirmations column if not exists
 try {
