@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { User, UserRole } from '../types';
-import { mockStore } from '../services/mockStore';
+
 import { apiService } from '../services/apiService';
 import {
   LayoutDashboard, Disc, DollarSign, Upload, Shield,
@@ -54,7 +54,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
     }
   };
   const handleLogout = () => {
-    mockStore.logout();
+    apiService.logout();
     setUser(null);
     navigate('/');
   };
