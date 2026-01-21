@@ -462,15 +462,7 @@ const initSchema = () => {
     `);
 };
 
-import bcrypt from 'bcryptjs'; // Imported for seeding admin
 
-// ... (rest of imports)
-
-// Initialize schema
-const initSchema = () => {
-    // ... (existing schema tables)
-    // ...
-};
 
 // Seed Admin Account
 const seedAdmin = () => {
