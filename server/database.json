@@ -1,0 +1,1113 @@
+{
+  "users": [
+    {
+      "id": "admin-1",
+      "email": "support@wbbt.net",
+      "password": "$2a$10$W.sRpkQXNKp/XYIPahdnD.mIFvmjK7xQA4hoVYuNXG/rwftBjjk6u",
+      "firstName": "Admin",
+      "lastName": "User",
+      "artistName": "WBBT Staff",
+      "role": "admin",
+      "isBanned": false,
+      "banReason": null,
+      "applicationStatus": "APPROVED",
+      "balance": 0,
+      "createdAt": "2026-01-19T14:06:40.809Z"
+    },
+    {
+      "id": "artist-1",
+      "email": "artist@example.com",
+      "password": "$2a$10$n1xmqmw81.jyfxNXJPaLTu/tFzJQbF2wQolxSayWJ0GNGWjhDiiuu",
+      "firstName": "Demo",
+      "lastName": "Artist",
+      "artistName": "New Talent",
+      "role": "user",
+      "isBanned": false,
+      "banReason": null,
+      "applicationStatus": "APPROVED",
+      "balance": 150.5,
+      "createdAt": "2026-01-19T14:06:40.872Z"
+    },
+    {
+      "id": "pending-1",
+      "email": "newbie@example.com",
+      "password": "$2a$10$Zmlo2OT9oc1IOdX/QKk5P.YWge8eHx8Y2tzvGl3Qg7ZcsOBCmImcC",
+      "firstName": "Alex",
+      "lastName": "Smith",
+      "artistName": "Lil New",
+      "role": "user",
+      "isBanned": false,
+      "banReason": null,
+      "applicationStatus": "APPROVED",
+      "balance": 0,
+      "createdAt": "2026-01-19T14:06:40.943Z"
+    },
+    {
+      "id": "user-1768831988761",
+      "email": "testuser@test.com",
+      "password": "$2a$10$wrGNKz9S4ISjKRgnFzNjJeaXI9guVjuOM/b5z8UdjUvoAAFE5UW7W",
+      "firstName": "Test",
+      "lastName": "User",
+      "artistName": "TestArtist",
+      "role": "user",
+      "isBanned": false,
+      "banReason": null,
+      "applicationStatus": "REJECTED",
+      "balance": 0,
+      "createdAt": "2026-01-19T14:13:08.889Z"
+    },
+    {
+      "id": "user-1768832206095",
+      "email": "bcan340@gmail.com",
+      "password": "$2a$10$NvuufORSxrL62u1pTvySBuC6ToIL1OlyHuj/jzAycsFEIpcFCdJ7C",
+      "firstName": "wbb",
+      "lastName": "bb",
+      "artistName": "ww",
+      "role": "user",
+      "isBanned": false,
+      "banReason": null,
+      "applicationStatus": "APPROVED",
+      "balance": 1600,
+      "createdAt": "2026-01-19T14:16:46.22Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": "app-1",
+      "userId": "pending-1",
+      "bio": "I make experimental hyper-pop with AI tools. Looking to distribute my first EP.",
+      "instagramUrl": "instagram.com/lilnew",
+      "spotifyUrl": null,
+      "soundcloudUrl": "soundcloud.com/lilnew",
+      "demoTrackUrl": "soundcloud.com/lilnew/demo",
+      "submissionDate": "2026-01-19"
+    },
+    {
+      "id": "app-1768832005599",
+      "userId": "user-1768831988761",
+      "bio": "",
+      "instagramUrl": null,
+      "spotifyUrl": null,
+      "soundcloudUrl": null,
+      "demoTrackUrl": "",
+      "submissionDate": "2026-01-19"
+    },
+    {
+      "id": "app-1768832211228",
+      "userId": "user-1768832206095",
+      "bio": "burak",
+      "instagramUrl": "can ",
+      "spotifyUrl": null,
+      "soundcloudUrl": null,
+      "demoTrackUrl": "öğüt",
+      "submissionDate": "2026-01-19"
+    }
+  ],
+  "releases": [
+    {
+      "id": "rel-sample-1",
+      "userId": "artist-1",
+      "title": "Summer Vibes EP",
+      "type": "EP",
+      "coverUrl": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
+      "wupc": "WBBT-2024001",
+      "status": "APPROVED",
+      "releaseDate": "2024-02-15",
+      "releaseTiming": "Specific",
+      "createdDate": "2026-01-19",
+      "genre": "Electronic",
+      "subGenre": "House",
+      "cLine": "New Talent",
+      "cYear": "2024",
+      "pLine": "New Talent",
+      "pYear": "2024",
+      "recordLabel": "Independent",
+      "distributedBefore": false,
+      "selectedStores": [
+        "Spotify",
+        "Apple Music",
+        "YouTube Music"
+      ],
+      "monetization": {
+        "tikTok": true,
+        "youtubeContentId": true,
+        "facebookInstagram": true
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": null
+    },
+    {
+      "id": "rel-1768833797327",
+      "userId": "user-1768832206095",
+      "title": "City Walk - John Patitucci",
+      "type": "Single",
+      "coverUrl": "http://localhost:3001/api/files/file-1768833743886-vcu2jf5g2",
+      "wupc": "WBBT-1768833797327",
+      "status": "APPROVED",
+      "releaseDate": "2026-02-08",
+      "releaseTiming": "ASAP",
+      "createdDate": "2026-01-19",
+      "genre": "Electronic",
+      "subGenre": null,
+      "cLine": "wwbb",
+      "cYear": "2026",
+      "pLine": "wwbb",
+      "pYear": "2026",
+      "recordLabel": "wbbt",
+      "distributedBefore": false,
+      "selectedStores": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "99"
+      ],
+      "monetization": {
+        "tikTok": false,
+        "youtubeContentId": false,
+        "facebookInstagram": false
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": null
+    },
+    {
+      "id": "rel-1768833813881",
+      "userId": "user-1768832206095",
+      "title": "City Walk - John Patitucci",
+      "type": "Single",
+      "coverUrl": "http://localhost:3001/api/files/file-1768833743886-vcu2jf5g2",
+      "wupc": "WBBT-1768833797327",
+      "status": "TAKEDOWN",
+      "releaseDate": "2026-02-08",
+      "releaseTiming": "ASAP",
+      "createdDate": "2026-01-19",
+      "genre": "Electronic",
+      "subGenre": null,
+      "cLine": "wwbb",
+      "cYear": "2026",
+      "pLine": "wwbb",
+      "pYear": "2026",
+      "recordLabel": "wbbt",
+      "distributedBefore": false,
+      "selectedStores": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "99"
+      ],
+      "monetization": {
+        "tikTok": false,
+        "youtubeContentId": false,
+        "facebookInstagram": false
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": null,
+      "takedownRequestedAt": "2026-01-19T17:45:53.556Z"
+    },
+    {
+      "id": "rel-1768835986129",
+      "userId": "user-1768832206095",
+      "title": "City",
+      "type": "Single",
+      "coverUrl": "http://localhost:3001/api/files/file-1768835925658-av9xunve3",
+      "wupc": "WBBT-1768835986129",
+      "status": "REJECTED",
+      "releaseDate": "2026-02-08",
+      "releaseTiming": "ASAP",
+      "createdDate": "2026-01-19",
+      "genre": "Pop",
+      "subGenre": null,
+      "cLine": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "cYear": "2026",
+      "pLine": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "pYear": "2026",
+      "recordLabel": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "distributedBefore": false,
+      "selectedStores": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "99"
+      ],
+      "monetization": {
+        "tikTok": false,
+        "youtubeContentId": false,
+        "facebookInstagram": false
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": "Copyright"
+    },
+    {
+      "id": "rel-1768841289565",
+      "userId": "user-1768832206095",
+      "title": "Frick",
+      "type": "Single",
+      "coverUrl": "http://localhost:3001/api/files/file-1768841269899-qoj7pibjh",
+      "wupc": "WBBT-1768841289565",
+      "status": "APPROVED",
+      "releaseDate": "2026-02-08",
+      "releaseTiming": "ASAP",
+      "createdDate": "2026-01-19",
+      "genre": "Electronic",
+      "subGenre": null,
+      "cLine": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "cYear": "2026",
+      "pLine": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "pYear": "2026",
+      "recordLabel": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "distributedBefore": false,
+      "selectedStores": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "99"
+      ],
+      "monetization": {
+        "tikTok": false,
+        "youtubeContentId": false,
+        "facebookInstagram": false
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": null
+    },
+    {
+      "id": "rel-1768841958778",
+      "userId": "user-1768832206095",
+      "title": "Patitucci",
+      "type": "Single",
+      "coverUrl": "http://localhost:3001/api/files/file-1768841788831-nqpza1d2z",
+      "wupc": "WBBT-1768841958778",
+      "status": "TAKEDOWN",
+      "releaseDate": "2026-02-08",
+      "releaseTiming": "ASAP",
+      "createdDate": "2026-01-19",
+      "genre": "Electronic",
+      "subGenre": null,
+      "cLine": "WBBT",
+      "cYear": "2026",
+      "pLine": "Oyku",
+      "pYear": "2026",
+      "recordLabel": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "distributedBefore": false,
+      "selectedStores": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "99"
+      ],
+      "monetization": {
+        "tikTok": false,
+        "youtubeContentId": false,
+        "facebookInstagram": false
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": null,
+      "takedownRequestedAt": "2026-01-19T18:23:54.985Z"
+    },
+    {
+      "id": "rel-1768843128302",
+      "userId": "user-1768832206095",
+      "title": "dem lex",
+      "type": "Single",
+      "coverUrl": "http://localhost:3001/api/files/file-1768842982066-xgz4baduz",
+      "wupc": "WBBT-1768843128302",
+      "status": "REJECTED",
+      "releaseDate": "2026-02-08",
+      "releaseTiming": "ASAP",
+      "createdDate": "2026-01-19",
+      "genre": "Country",
+      "subGenre": null,
+      "cLine": "ww",
+      "cYear": "2026",
+      "pLine": "ww",
+      "pYear": "2026",
+      "recordLabel": "wbbt",
+      "distributedBefore": false,
+      "selectedStores": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "99"
+      ],
+      "monetization": {
+        "tikTok": false,
+        "youtubeContentId": false,
+        "facebookInstagram": false
+      },
+      "territoryPolicy": "Global",
+      "rejectionReason": "yok"
+    }
+  ],
+  "tracks": [
+    {
+      "id": "trk-1",
+      "releaseId": "rel-sample-1",
+      "title": "Sunset Dreams",
+      "version": null,
+      "isrc": "TRWBT24001",
+      "duration": 240,
+      "fileUrl": "",
+      "language": "English",
+      "isInstrumental": false,
+      "isExplicit": false
+    },
+    {
+      "id": "trk-1768833636498-0",
+      "releaseId": "rel-1768833797327",
+      "title": "City Walk",
+      "version": null,
+      "isrc": "TRWBT1768833797328",
+      "iswc": null,
+      "duration": 0,
+      "fileUrl": "/api/files/file-1768833636455-peegq1v5r",
+      "fileId": "file-1768833636455-peegq1v5r",
+      "language": "English",
+      "isInstrumental": false,
+      "isExplicit": false,
+      "lyrics": null
+    },
+    {
+      "id": "trk-1768833636498-0",
+      "releaseId": "rel-1768833813881",
+      "title": "City Walk",
+      "version": null,
+      "isrc": "TRWBT1768833797328",
+      "iswc": null,
+      "duration": 0,
+      "fileUrl": "/api/files/file-1768833636455-peegq1v5r",
+      "fileId": "file-1768833636455-peegq1v5r",
+      "language": "English",
+      "isInstrumental": false,
+      "isExplicit": false,
+      "lyrics": null
+    },
+    {
+      "id": "trk-1768835851956-0",
+      "releaseId": "rel-1768835986129",
+      "title": "City",
+      "version": null,
+      "isrc": "TRWBT1768835986129",
+      "iswc": null,
+      "duration": 0,
+      "fileUrl": "/api/files/file-1768835851922-4063881x3",
+      "fileId": "file-1768835851922-4063881x3",
+      "language": "Turkish / Türkçe",
+      "isInstrumental": false,
+      "isExplicit": false,
+      "lyrics": null
+    },
+    {
+      "id": "trk-1768841202973-0",
+      "releaseId": "rel-1768841289565",
+      "title": "Frick",
+      "version": null,
+      "isrc": "TRWBT1768841289565",
+      "iswc": null,
+      "duration": 0,
+      "fileUrl": "/api/files/file-1768841202951-gteodpn6h",
+      "fileId": "file-1768841202951-gteodpn6h",
+      "language": "English",
+      "isInstrumental": false,
+      "isExplicit": false,
+      "lyrics": null
+    },
+    {
+      "id": "trk-1768841718276-0",
+      "releaseId": "rel-1768841958778",
+      "title": "Patitucci",
+      "version": null,
+      "isrc": "TRWBT1768841958778",
+      "iswc": null,
+      "duration": 0,
+      "fileUrl": "/api/files/file-1768841718253-mf8ifdjqq",
+      "fileId": "file-1768841718253-mf8ifdjqq",
+      "language": "English",
+      "isInstrumental": false,
+      "isExplicit": false,
+      "lyrics": null
+    },
+    {
+      "id": "trk-1768842831192-0",
+      "releaseId": "rel-1768843128302",
+      "title": "dem",
+      "version": null,
+      "isrc": "TRWBT1768843128302",
+      "iswc": null,
+      "duration": 0,
+      "fileUrl": "/api/files/file-1768842831180-dp76pa7fj",
+      "fileId": "file-1768842831180-dp76pa7fj",
+      "language": "English",
+      "isInstrumental": false,
+      "isExplicit": false,
+      "lyrics": null
+    }
+  ],
+  "trackArtists": [
+    {
+      "id": "art-1",
+      "trackId": "trk-1",
+      "name": "New Talent",
+      "role": "Primary Artist"
+    },
+    {
+      "id": "art-1768833636498",
+      "trackId": "trk-1768833636498-0",
+      "name": "WBBT",
+      "role": "Primary Artist",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768833694282",
+      "trackId": "trk-1768833636498-0",
+      "name": "Rezz",
+      "role": "Featured",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768833636498",
+      "trackId": "trk-1768833636498-0",
+      "name": "WBBT",
+      "role": "Primary Artist",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768833694282",
+      "trackId": "trk-1768833636498-0",
+      "name": "Rezz",
+      "role": "Featured",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768835851956",
+      "trackId": "trk-1768835851956-0",
+      "name": "WBBT",
+      "role": "Primary Artist",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768835880852",
+      "trackId": "trk-1768835851956-0",
+      "name": "Rezz",
+      "role": "Featured",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768841202973",
+      "trackId": "trk-1768841202973-0",
+      "name": "Oyku",
+      "role": "Primary Artist",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768841220823",
+      "trackId": "trk-1768841202973-0",
+      "name": "WBBT",
+      "role": "Producer",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768841718276",
+      "trackId": "trk-1768841718276-0",
+      "name": "WBBT",
+      "role": "Primary Artist",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768841736007",
+      "trackId": "trk-1768841718276-0",
+      "name": "Oyku",
+      "role": "Featured",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768841867963",
+      "trackId": "trk-1768841718276-0",
+      "name": "wbb",
+      "role": "Producer",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768842831192",
+      "trackId": "trk-1768842831192-0",
+      "name": "WBBT",
+      "role": "Primary Artist",
+      "spotifyId": null,
+      "appleId": null
+    },
+    {
+      "id": "art-1768842846206",
+      "trackId": "trk-1768842831192-0",
+      "name": "OYKü",
+      "role": "Producer",
+      "spotifyId": null,
+      "appleId": null
+    }
+  ],
+  "earnings": [
+    {
+      "id": "earn-0",
+      "userId": "artist-1",
+      "month": "2023-10",
+      "amount": 120.5,
+      "streams": 45000,
+      "downloads": 12
+    },
+    {
+      "id": "earn-1",
+      "userId": "artist-1",
+      "month": "2023-11",
+      "amount": 340,
+      "streams": 120000,
+      "downloads": 45
+    },
+    {
+      "id": "earn-2",
+      "userId": "artist-1",
+      "month": "2023-12",
+      "amount": 280.75,
+      "streams": 98000,
+      "downloads": 22
+    },
+    {
+      "id": "earn-3",
+      "userId": "artist-1",
+      "month": "2024-01",
+      "amount": 450.25,
+      "streams": 160000,
+      "downloads": 60
+    },
+    {
+      "id": "earn-1768833987176",
+      "userId": "user-1768832206095",
+      "month": "2026-1",
+      "amount": 1600,
+      "streams": 15116,
+      "downloads": 0
+    }
+  ],
+  "files": [
+    {
+      "id": "file-1768833636455-peegq1v5r",
+      "userId": "user-1768832206095",
+      "originalName": "City Walk - John Patitucci.mp3",
+      "storedName": "file-1768833636455-peegq1v5r.mp3",
+      "type": "audio",
+      "size": 7953800,
+      "uploadedAt": "2026-01-19T14:40:36.478Z"
+    },
+    {
+      "id": "file-1768833743886-vcu2jf5g2",
+      "userId": "user-1768832206095",
+      "originalName": "ChatGPT Image 18 Oca 2026 23_13_03.png",
+      "storedName": "file-1768833743886-vcu2jf5g2.png",
+      "type": "image",
+      "size": 154129,
+      "uploadedAt": "2026-01-19T14:42:23.889Z"
+    },
+    {
+      "id": "file-1768835851922-4063881x3",
+      "userId": "user-1768832206095",
+      "originalName": "City Walk - John Patitucci (1).mp3",
+      "storedName": "file-1768835851922-4063881x3.mp3",
+      "type": "audio",
+      "size": 7953800,
+      "uploadedAt": "2026-01-19T15:17:31.94Z"
+    },
+    {
+      "id": "file-1768835925658-av9xunve3",
+      "userId": "user-1768832206095",
+      "originalName": "99156c32851b6cb50b7ad28372dae0a7.jpg",
+      "storedName": "file-1768835925658-av9xunve3.jpg",
+      "type": "image",
+      "size": 18436,
+      "uploadedAt": "2026-01-19T15:18:45.659Z"
+    },
+    {
+      "id": "file-1768841202951-gteodpn6h",
+      "userId": "user-1768832206095",
+      "originalName": "beatfrick rock.mp3",
+      "storedName": "file-1768841202951-gteodpn6h.mp3",
+      "type": "audio",
+      "size": 4829172,
+      "uploadedAt": "2026-01-19T16:46:42.959Z"
+    },
+    {
+      "id": "file-1768841269899-qoj7pibjh",
+      "userId": "user-1768832206095",
+      "originalName": "99156c32851b6cb50b7ad28372dae0a7 (1).jpg",
+      "storedName": "file-1768841269899-qoj7pibjh.jpg",
+      "type": "image",
+      "size": 18436,
+      "uploadedAt": "2026-01-19T16:47:49.9Z"
+    },
+    {
+      "id": "file-1768841718253-mf8ifdjqq",
+      "userId": "user-1768832206095",
+      "originalName": "City Walk - John Patitucci.mp3",
+      "storedName": "file-1768841718253-mf8ifdjqq.mp3",
+      "type": "audio",
+      "size": 7953800,
+      "uploadedAt": "2026-01-19T16:55:18.268Z"
+    },
+    {
+      "id": "file-1768841788831-nqpza1d2z",
+      "userId": "user-1768832206095",
+      "originalName": "99156c32851b6cb50b7ad28372dae0a7 (1).jpg",
+      "storedName": "file-1768841788831-nqpza1d2z.jpg",
+      "type": "image",
+      "size": 18436,
+      "uploadedAt": "2026-01-19T16:56:28.832Z"
+    },
+    {
+      "id": "file-1768842831180-dp76pa7fj",
+      "userId": "user-1768832206095",
+      "originalName": "dem lex.mp3",
+      "storedName": "file-1768842831180-dp76pa7fj.mp3",
+      "type": "audio",
+      "size": 4280946,
+      "uploadedAt": "2026-01-19T17:13:51.186Z"
+    },
+    {
+      "id": "file-1768842982066-xgz4baduz",
+      "userId": "user-1768832206095",
+      "originalName": "doit.png",
+      "storedName": "file-1768842982066-xgz4baduz.png",
+      "type": "image",
+      "size": 8112043,
+      "uploadedAt": "2026-01-19T17:16:22.081Z"
+    },
+    {
+      "id": "file-1768844862748-y07igkjby",
+      "userId": "user-1768832206095",
+      "originalName": "ww - Frick.mp3",
+      "storedName": "file-1768844862748-y07igkjby.mp3",
+      "type": "audio",
+      "size": 4829172,
+      "uploadedAt": "2026-01-19T17:47:42.759Z"
+    },
+    {
+      "id": "file-1768845489901-fm2p5t329",
+      "userId": "admin-1",
+      "originalName": "test.mp3",
+      "storedName": "file-1768845489901-fm2p5t329.mp3",
+      "type": "audio",
+      "size": 18,
+      "uploadedAt": "2026-01-19T17:58:09.902Z"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "ticket-1768833922293",
+      "userId": "user-1768832206095",
+      "userName": "ww",
+      "userEmail": "bcan340@gmail.com",
+      "subject": "Sıçtım",
+      "message": "merhaba",
+      "status": "CLOSED",
+      "createdAt": "2026-01-19T14:45:22.293Z",
+      "responses": [
+        {
+          "from": "admin",
+          "message": "hasiktir",
+          "createdAt": "2026-01-19T14:45:29.549Z"
+        },
+        {
+          "from": "admin",
+          "message": "merhaba\n",
+          "createdAt": "2026-01-19T14:49:19.949Z"
+        }
+      ]
+    },
+    {
+      "id": "ticket-1768840569308",
+      "userId": "artist-1",
+      "userName": "New Talent",
+      "userEmail": "artist@example.com",
+      "subject": "Curl Test",
+      "message": "Testing from curl",
+      "status": "OPEN",
+      "createdAt": "2026-01-19T16:36:09.308Z",
+      "responses": []
+    }
+  ],
+  "withdrawals": [
+    {
+      "id": "wd-1768841015787",
+      "userId": "artist-1",
+      "userEmail": "artist@example.com",
+      "artistName": "New Talent",
+      "amount": 50,
+      "method": "bank",
+      "details": "TR99999",
+      "status": "PENDING",
+      "createdAt": "2026-01-19T16:43:35.787Z",
+      "updatedAt": "2026-01-19T16:43:35.787Z"
+    },
+    {
+      "id": "wd-1768841127636",
+      "userId": "user-1768832206095",
+      "userEmail": "bcan340@gmail.com",
+      "artistName": "ww",
+      "amount": 1600,
+      "method": "bank",
+      "details": "IBAN: TR68 0001 0090 1010 3164 7050 06, SWIFT: akbk, Holder: burak can",
+      "status": "PENDING",
+      "createdAt": "2026-01-19T16:45:27.636Z",
+      "updatedAt": "2026-01-19T16:45:27.636Z"
+    }
+  ],
+  "artists": [
+    {
+      "id": "lib-art-1768841732842",
+      "name": "WBBT",
+      "spotifyUrl": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "appleUrl": "",
+      "instagramUrl": "",
+      "createdBy": "user-1768832206095",
+      "createdAt": "2026-01-19T16:55:32.842Z"
+    },
+    {
+      "id": "lib-art-1768841743078",
+      "name": "Oyku",
+      "spotifyUrl": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "appleUrl": "",
+      "instagramUrl": "",
+      "createdBy": "user-1768832206095",
+      "createdAt": "2026-01-19T16:55:43.078Z"
+    },
+    {
+      "id": "lib-art-1768842699553",
+      "name": "Test Artist",
+      "spotifyUrl": "",
+      "appleUrl": "",
+      "instagramUrl": "",
+      "createdBy": "artist-1",
+      "createdAt": "2026-01-19T17:11:39.553Z"
+    },
+    {
+      "id": "lib-art-1768842939989",
+      "name": "OYKü",
+      "spotifyUrl": "WBBT Recording Limited under exclusive license to WBBT Music Group Inc.",
+      "appleUrl": "",
+      "instagramUrl": "",
+      "createdBy": "user-1768832206095",
+      "createdAt": "2026-01-19T17:15:39.989Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1768842007534-n2m38vzbz",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Patitucci\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:00:07.534Z"
+    },
+    {
+      "id": "notif-1768842014081-omqyppp6x",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Patitucci\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:00:14.081Z"
+    },
+    {
+      "id": "notif-1768842016721-ic2kr3fz1",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:00:16.721Z"
+    },
+    {
+      "id": "notif-1768842348667-938heyinp",
+      "userId": "artist-1",
+      "title": "Release Approved",
+      "message": "Your release \"Summer Vibes EP\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:05:48.667Z"
+    },
+    {
+      "id": "notif-1768842381973-52z9g2yvl",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:06:21.973Z"
+    },
+    {
+      "id": "notif-1768842718910-vetzimjzq",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:11:58.91Z"
+    },
+    {
+      "id": "notif-1768842728559-cpbfee5hl",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:12:08.559Z"
+    },
+    {
+      "id": "notif-1768843194793-gfda7tw5x",
+      "userId": "user-1768832206095",
+      "title": "Release Rejected",
+      "message": "Your release \"dem lex\" was rejected. Reason: No reason provided",
+      "type": "error",
+      "read": false,
+      "createdAt": "2026-01-19T17:19:54.793Z"
+    },
+    {
+      "id": "notif-1768843614186-ljx8zq3aw",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:26:54.186Z"
+    },
+    {
+      "id": "notif-1768843856607-7p725n6nw",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:30:56.608Z"
+    },
+    {
+      "id": "notif-1768843998101-2w5plir6y",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:33:18.101Z"
+    },
+    {
+      "id": "notif-1768844559149-rub9afswr",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"dem lex\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:42:39.149Z"
+    },
+    {
+      "id": "notif-1768844689813-8hhmxfh8b",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"dem lex\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:44:49.813Z"
+    },
+    {
+      "id": "notif-1768844704250-71oq6hv3y",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"dem lex\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:45:04.25Z"
+    },
+    {
+      "id": "notif-1768845226797-8ch57iox2",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:53:46.797Z"
+    },
+    {
+      "id": "notif-1768845258194-lj0uc7elr",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T17:54:18.194Z"
+    },
+    {
+      "id": "notif-1768845866681-49piv1j7h",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:04:26.681Z"
+    },
+    {
+      "id": "notif-1768846025815-0wue9arhy",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:07:05.815Z"
+    },
+    {
+      "id": "notif-1768846227129-mbti7lerh",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Patitucci\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:10:27.129Z"
+    },
+    {
+      "id": "notif-1768846230047-7m0ryed4y",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:10:30.047Z"
+    },
+    {
+      "id": "notif-1768846283156-kyn04iu1n",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:11:23.156Z"
+    },
+    {
+      "id": "notif-1768846375873-alrs107ys",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:12:55.873Z"
+    },
+    {
+      "id": "notif-1768846449881-qqgemb2g3",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:14:09.881Z"
+    },
+    {
+      "id": "notif-1768846512577-5871dexyh",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:15:12.577Z"
+    },
+    {
+      "id": "notif-1768846635266-ikg4i2li0",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:17:15.266Z"
+    },
+    {
+      "id": "notif-1768846750842-c5xlah1bx",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:19:10.842Z"
+    },
+    {
+      "id": "notif-1768846901046-zzo4fny0f",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Frick\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:21:41.046Z"
+    },
+    {
+      "id": "notif-1768846908193-mfvmtpye8",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Patitucci\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:21:48.193Z"
+    },
+    {
+      "id": "notif-1768847008376-8pcg1m3rw",
+      "userId": "user-1768832206095",
+      "title": "Release Approved",
+      "message": "Your release \"Patitucci\" is now live!",
+      "type": "success",
+      "read": false,
+      "createdAt": "2026-01-19T18:23:28.376Z"
+    },
+    {
+      "id": "notif-1768847013389-wgedaobxw",
+      "userId": "user-1768832206095",
+      "title": "Release Rejected",
+      "message": "Your release \"dem lex\" was rejected. Reason: yok",
+      "type": "error",
+      "read": false,
+      "createdAt": "2026-01-19T18:23:33.389Z"
+    }
+  ]
+}
