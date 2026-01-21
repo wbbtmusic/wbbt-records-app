@@ -161,8 +161,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
         `}
       >
         {/* FLOATING HEADER - Only detailed on Dashboard */}
-        <header className="mt-4 h-[88px] glass-panel rounded-[40px] flex items-center justify-between px-8 mb-6 transition-all duration-500 ease-wise-ease shrink-0">
-          <div className="flex items-center gap-6">
+        <header className="mt-4 h-[88px] glass-panel rounded-[40px] flex items-center justify-between px-4 md:px-8 mb-6 transition-all duration-500 ease-wise-ease shrink-0">
+          <div className="flex items-center gap-3 md:gap-6">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-[#AAA] hover:text-white hover:bg-white/10 transition-all active:scale-90"
@@ -189,8 +189,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
               </h1>
             )}
           </div>
-          <div className="flex items-center gap-6">
-            <Link to="/profile" className="hidden md:flex items-center gap-4 bg-white/5 pl-5 pr-2 py-2 rounded-full border border-white/5 hover:bg-white/10 transition-colors">
+          <div className="flex items-center gap-3 md:gap-6">
+            <Link to="/profile" className="hidden lg:flex items-center gap-4 bg-white/5 pl-5 pr-2 py-2 rounded-full border border-white/5 hover:bg-white/10 transition-colors">
               <div className="flex flex-col items-end">
                 <span className="text-xs font-bold text-white font-display">{user.artistName}</span>
                 <span className="text-[9px] text-[#666] tracking-wider uppercase">Pro Artist</span>
@@ -229,9 +229,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
 
             {isDashboard && (
               <Link to="/releases/create">
-                <button className="h-[56px] px-10 rounded-full bg-white text-black hover:bg-[#F2F2F2] text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 shadow-xl shadow-white/5 hover:scale-105 active:scale-95 font-display">
+                <button className="h-[56px] px-6 md:px-8 rounded-full bg-white text-black hover:bg-[#F2F2F2] text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 shadow-xl shadow-white/5 hover:scale-105 active:scale-95 font-display">
                   <Upload size={18} />
-                  New Release
+                  <span className="hidden sm:inline">New Release</span>
                 </button>
               </Link>
             )}
