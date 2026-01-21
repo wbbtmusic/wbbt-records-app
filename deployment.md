@@ -1,9 +1,43 @@
-# 🌍 En Basit Kurulum Rehberi (Adım Adım)
+# 🚀 WBBT Records Deployment Guide
 
-Bu rehber, teknik terimlerden arındırılmış, sadece **Kopyala-Yapıştır** yapman gereken bir versiyondur.
+Bu dosyada iki yöntem anlatılmaktadır:
+1.  **Coolify ile Kurulum (En Kolayı & Otomatik Güncelleme)**
+2.  **Manuel Linux Kurulumu (PM2 ile)**
 
-## 1. Kodları GitHub'a Atma (Bilgisayarında)
-Önce projeyi GitHub'a yüklemelisin.
+---
+
+## 🟢 YÖNTEM 1: Coolify ile Kurulum (Önerilen)
+
+Coolify kullanıyorsan işin çok kolay. Her "git push" yaptığında sunucu kendini **otomatik günceller**.
+
+### 1. Projeyi Ekle
+*   Coolify Paneline gir -> **+ New Resource** -> **Public Repository**.
+*   Repo URL: `https://github.com/wbbtmusic/wbbt-records-app`
+*   **Check Repository** butonuna bas.
+
+### 2. Ayarlar
+*   **Build Pack:** `Nixpacks` seç.
+*   **Port:** `3001` yaz.
+*   **Continue** de.
+
+### 3. Ortam Değişkenleri (Environment Variables)
+*   Proje detayına gir -> **Environment Variables**.
+*   Bilgisayarındaki `.env.local` dosyasının içindekileri buraya tek tek ekle veya "Bulk Edit" ile yapıştır.
+    *   Özellikle `JWT_SECRET`, `GEMINI_API_KEY` vb.
+
+### 4. Başlat
+*   **Deploy** butonuna bas.
+*   Bitti! Coolify otomatik olarak projeyi kurup 3001 portundan yayına alır.
+*   Domain ayarlarından domainini bağlayabilirsin (örn: `panel.wbbt.net`).
+
+---
+
+## 🔴 YÖNTEM 2: Manuel Linux Kurulumu (PM2)
+Eğer Coolify yoksa, klasik yöntemle şöyle kurarsın:
+
+### 1. Kodları GitHub'a Atma (Bilgisayarında)
+Konfüçyüs der ki: "Kod Github'da değilse, o kod hiç yazılmamıştır."
+... (Devamı aşağıda)
 1.  VS Code'da sol menüdeki **Source Control** (Dallı ikon) sekmesine gel.
 2.  "Publish directly" diye bir buton varsa bas. Yoksa şu komutları terminale yaz:
     ```bash

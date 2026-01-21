@@ -1,20 +1,61 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🎵 WBBT Records - Music Distribution Platform
 
-# Run and deploy your AI Studio app
+A modern, full-featured music distribution platform built with **React, Vite, Node.js (Express), and SQLite**.
 
-This contains everything you need to run your app locally.
+![Admin Panel](https://placehold.co/600x400?text=WBBT+Records)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Un2gdUwnWr0ZDs6-PMlavY-Xy-RtgM9e
+## ✨ Features
+- **Release Wizard**: Step-by-step music upload process.
+- **Admin Panel**: Manage users, releases, withdrawals, and tickets.
+- **Analytics**: Monthly listeners tracking via Apify integration.
+- **Financials**: Earnings report and withdrawal requests.
+- **Team Management**: Split royalties with collaborators.
+- **Auto-Seeding**: Automatic Admin account creation.
 
-## Run Locally
+## 🚀 Tech Stack
+- **Frontend**: React 19, TailwindCSS, Lucide Icons, Recharts.
+- **Backend**: Node.js, Express, Better-SQLite3.
+- **Security**: Helmet, Rate Limiting, BCrypt.
+- **Deployment**: PM2, Docker (Optional), Cloudflare Tunnel ready.
 
-**Prerequisites:**  Node.js
+## 🛠️ Installation (Local)
 
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/wbbtmusic/wbbt-records-app.git
+   cd wbbt-records-app
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Setup Environment**
+   Duplicate `.env.example` to `.env.local` and fill in keys.
+
+4. **Run Development Server**
+   ```bash
+   npm start
+   ```
+   - Frontend: `http://localhost:5173`
+   - Backend: `http://localhost:3001`
+
+## 🌍 Deployment
+
+### Option 1: Coolify (Recommended)
+1. Add new resource -> Public Repository.
+2. Paste repo URL.
+3. Build Pack: **Nixpacks**.
+4. Port: **3001**.
+5. Enable **Autodeploy**.
+
+### Option 2: Linux + PM2
+See [deployment.md](./deployment.md) for detailed instructions.
+
+---
+
+## 🔑 Default Admin
+On fresh install, use:
+- **Email**: `support@wbbt.net`
+- **Password**: `I am not looking you are someone else :)`
