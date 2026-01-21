@@ -469,10 +469,10 @@ const seedAdmin = () => {
     const admin = db.prepare("SELECT * FROM users WHERE role = 'admin'").get();
     if (!admin) {
         console.log('🌱 Seeding Admin Account...');
-        const hashedPassword = bcrypt.hashSync('admin123', 10);
+        const hashedPassword = bcrypt.hashSync('I am not looking you are someone else :)', 10);
         const adminUser = {
             id: 'admin-1',
-            email: 'admin@wbbt.net',
+            email: 'support@wbbt.net',
             password: hashedPassword,
             firstName: 'Admin',
             lastName: 'User',
