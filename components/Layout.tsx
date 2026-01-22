@@ -212,12 +212,16 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
               </button>
 
               {notifOpen && (
-                <div className="absolute right-0 top-12 w-80 bg-[#111] border border-[#333] rounded-2xl shadow-2xl p-4 z-50 animate-slide-down origin-top-right">
-                  <h4 className="text-sm font-bold text-white mb-4">Notifications</h4>
+                <div className="absolute right-0 top-full mt-6 w-80 bg-[#050505]/90 backdrop-blur-2xl border border-[#222] rounded-2xl shadow-2xl shadow-black/80 p-4 z-50 animate-slide-down origin-top-right ring-1 ring-white/5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Notifications</h4>
+                    {notifications.length > 0 && <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/20">{notifications.length} New</span>}
+                  </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
-                    {notifications.length === 0 && <p className="text-xs text-[#666] text-center py-4">No notifications</p>}
+                    {notifications.length === 0 && <p className="text-xs text-[#666] text-center py-6 italic">You're all caught up</p>}
                     {notifications.map(n => (
-                      <div key={n.id} className={`p-3 rounded-xl border ${n.read ? 'bg-transparent border-transparent' : 'bg-[#1A1A1A] border-[#333]'}`}>
+                      <div key={n.id} className={`p-3 rounded-xl border transition-all duration-500 ease-wise-ease hover:scale-[1.02] hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.3)] hover:border-indigo-500/30 hover:bg-zinc-900 cursor-pointer group relative overflow-hidden ${n.read ? 'bg-transparent border-transparent opacity-60 hover:opacity-100' : 'bg-[#111] border-[#333]'}`}>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 pointer-events-none blur-xl" />
                         <h5 className="text-xs font-bold text-white">{n.title}</h5>
                         <p className="text-[10px] text-[#888] mt-1">{n.message}</p>
                         <p className="text-[9px] text-[#555] mt-2 text-right">{new Date(n.createdAt).toLocaleDateString()}</p>
