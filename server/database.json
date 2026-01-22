@@ -2,7 +2,7 @@
   "users": [
     {
       "id": "admin-1",
-      "email": "support@wbbt.net",
+      "email": "admin@wbbt.net",
       "password": "$2a$10$W.sRpkQXNKp/XYIPahdnD.mIFvmjK7xQA4hoVYuNXG/rwftBjjk6u",
       "firstName": "Admin",
       "lastName": "User",

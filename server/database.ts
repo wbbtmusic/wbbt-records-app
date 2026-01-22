@@ -466,13 +466,16 @@ const initSchema = () => {
 
 // Seed Admin Account
 const seedAdmin = () => {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@wbbt.net';
+    const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+
     const admin = db.prepare("SELECT * FROM users WHERE role = 'admin'").get();
     if (!admin) {
         console.log('🌱 Seeding Admin Account...');
-        const hashedPassword = bcrypt.hashSync('I am not looking you are someone else :)', 10);
+        const hashedPassword = bcrypt.hashSync(adminPass, 10);
         const adminUser = {
             id: 'admin-1',
-            email: 'support@wbbt.net',
+            email: adminEmail,
             password: hashedPassword,
             firstName: 'Admin',
             lastName: 'User',
@@ -488,7 +491,7 @@ const seedAdmin = () => {
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             `);
             stmt.run(adminUser.id, adminUser.email, adminUser.password, adminUser.firstName, adminUser.lastName, adminUser.artistName, adminUser.role, adminUser.applicationStatus, adminUser.balance);
-            console.log('✅ Admin Account Created: admin@wbbt.net / admin123');
+            console.log(`✅ Admin Account Created: ${adminEmail}`);
         } catch (error) {
             console.error('❌ Failed to seed admin:', error);
         }
@@ -498,6 +501,7 @@ const seedAdmin = () => {
 // Execute Init and Seed
 initSchema();
 seedAdmin();
+
 
 
 // Migration: Add confirmations column if not exists

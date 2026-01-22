@@ -54,8 +54,3 @@ A modern, full-featured music distribution platform built with **React, Vite, No
 See [deployment.md](./deployment.md) for detailed instructions.
 
 ---
-
-## 🔑 Default Admin
-On fresh install, use:
-- **Email**: `support@wbbt.net`
-- **Password**: `I am not looking you are someone else :)`
