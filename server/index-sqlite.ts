@@ -86,7 +86,7 @@ async function generateGeminiContent(parts: any[]) {
 }
 
 
-const UPLOADS_DIR = path.join(process.cwd(), 'server', 'uploads');
+const UPLOADS_DIR = path.resolve(__dirname, 'uploads');
 
 // Ensure uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {
@@ -98,7 +98,10 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:3001',
-    'http://127.0.0.1:5173'
+    'http://127.0.0.1:5173',
+    'https://app.wbbt.net',
+    'https://wbbt.net',
+    'https://www.wbbt.net'
 ];
 
 app.use(cors({
