@@ -1,21 +1,25 @@
 #!/bin/bash
 
-echo "🔄 Starting Update Process..."
+# Hata durumunda scripti durdur
+set -e
 
-# 1. Pull latest code
-echo "⬇️  Pulling changes from Git..."
+echo "🔄 Update işlemi başlatılıyor..."
+
+# 1. En güncel kodu çek
+echo "⬇️  Git changes çekiliyor..."
 git pull origin main
 
-# 2. Install dependencies
-echo "📦 Installing dependencies..."
+# 2. Bağımlılıkları yükle
+echo "📦 NPM paketleri yükleniyor..."
 npm install
 
-# 3. Build Frontend
-echo "🏗️  Building React App..."
+# 3. Frontend Build al
+echo "🏗️  React Build alınıyor..."
 npm run build
 
-# 4. Restart Server
-echo "🚀 Restarting PM2 process..."
-pm2 reload ecosystem.config.cjs --env production
+# 4. Sunucuyu Yeniden Başlat
+echo "🚀 PM2 servisi yeniden başlatılıyor..."
+# Reload çalışmazsa restart dene
+pm2 reload ecosystem.config.cjs --env production || pm2 restart ecosystem.config.cjs --env production
 
-echo "✅ Update Complete!"
+echo "✅ Güncelleme başarıyla tamamlandı!"
