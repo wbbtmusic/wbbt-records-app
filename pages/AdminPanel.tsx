@@ -243,6 +243,20 @@ const AdminPanel: React.FC = () => {
         setActionLoading(false);
     };
 
+    const handleSystemUpdate = async () => {
+        if (!confirm('Start System Update? This will pull the latest code and restart the server.\n\nEnsure no critical tasks are running.')) return;
+        setActionLoading(true);
+        try {
+            const res = await apiService.systemUpdate();
+            alert(`Update Started Successfully!\n\nServer Output:\n${res.output}\n\nThe system is restarting... page will reload in 10 seconds.`);
+            setTimeout(() => window.location.reload(), 10000);
+        } catch (e: any) {
+            console.error(e);
+            alert('Update Failed: ' + e.message);
+        }
+        setActionLoading(false);
+    };
+
 
     const loadData = async () => {
         setLoading(true);
@@ -1266,6 +1280,10 @@ const AdminPanel: React.FC = () => {
                                 />
                                 <Button variant="ghost" className="text-xs border border-[#333] hover:bg-[#222] text-blue-400 bg-blue-900/10">
                                     <Upload size={14} className="mr-2" /> Restore Data
+                                </Button>
+
+                                <Button variant="ghost" className="text-xs border border-[#333] hover:bg-[#222] text-red-500 bg-red-900/10" onClick={handleSystemUpdate}>
+                                    <RefreshCw size={14} className="mr-2" /> System Update
                                 </Button>
                             </div>
 

@@ -576,6 +576,15 @@ export const apiService = {
         return data.users;
     },
 
+    async systemUpdate() {
+        const res = await fetch(`${API_BASE}/admin/system-update`, {
+            method: 'POST',
+            headers: authHeaders()
+        });
+        if (!res.ok) throw new Error('Update failed');
+        return await res.json();
+    },
+
     async getPendingApplications() {
         const res = await fetch(`${API_BASE}/admin/applications`, {
             headers: authHeaders()

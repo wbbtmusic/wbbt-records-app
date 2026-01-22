@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { sqlite } from './database.js';
 import { externalAnalyticsService } from './services/externalAnalytics.js';
+import { exec } from 'child_process';
 import dotenv from 'dotenv';
 
 // Load env vars
@@ -622,6 +623,24 @@ app.put('/api/admin/users/:id', authMiddleware, adminMiddleware, (req: any, res)
 
     sqlite.updateUser(id, updates);
     res.json({ success: true });
+});
+
+app.post('/api/admin/system-update', authMiddleware, adminMiddleware, (req: any, res) => {
+    console.log('[System Update] Triggered by user:', req.userId);
+
+    const scriptPath = path.join(__dirname, '..', 'update.sh');
+
+    exec(`bash "${scriptPath}"`, { cwd: path.join(__dirname, '..') }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`[System Update] Error: ${error.message}`);
+            return res.status(500).json({ error: 'Update failed', details: stderr });
+        }
+        if (stderr) {
+            console.warn(`[System Update] Stderr: ${stderr}`);
+        }
+        console.log(`[System Update] Output: ${stdout}`);
+        res.json({ success: true, message: 'Update process started', output: stdout });
+    });
 });
 
 // Background function to fetch and cache analytics data
