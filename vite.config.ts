@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     server: {
-      port: Number(process.env.VITE_PORT) || 5173,
+      port: Number(process.env.VITE_PORT) || 3000,
       host: '0.0.0.0',
       proxy: {
         '/api': {

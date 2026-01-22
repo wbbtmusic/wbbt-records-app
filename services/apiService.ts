@@ -645,6 +645,43 @@ export const apiService = {
         return await res.json();
     },
 
+    uploadFileWithProgress(filename: string, data: string, type: string, onProgress: (percent: number) => void): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${API_BASE}/upload`);
+
+            // Set headers
+            const headers = authHeaders(); // returns { Content-Type: ..., Authorization: ... }
+            Object.keys(headers).forEach(key => {
+                xhr.setRequestHeader(key, (headers as any)[key]);
+            });
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    onProgress(percentComplete);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        resolve(result);
+                    } catch (e) {
+                        reject(new Error('Invalid JSON response'));
+                    }
+                } else {
+                    reject(new Error('Upload failed'));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error during upload'));
+
+            xhr.send(JSON.stringify({ filename, data, type }));
+        });
+    },
+
     getFileUrl(fileId: string) {
         return `${API_BASE}/files/${fileId}`;
     },

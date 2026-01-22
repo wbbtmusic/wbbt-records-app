@@ -28,7 +28,7 @@ app.use(helmet({
 // Rate Limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per 15 mins
+    max: 1000, // Limit each IP to 1000 requests per 15 mins
     standardHeaders: true,
     legacyHeaders: false,
 });
@@ -134,7 +134,7 @@ app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Security: Rate Limiting for Auth
 const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
-const RATE_LIMIT = { maxAttempts: 5, windowMs: 15 * 60 * 1000 }; // 5 attempts per 15 min
+const RATE_LIMIT = { maxAttempts: 50, windowMs: 15 * 60 * 1000 }; // 50 attempts per 15 min
 
 const rateLimitMiddleware = (req: any, res: any, next: any) => {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
@@ -1788,7 +1788,7 @@ app.post('/api/withdrawals', authMiddleware, (req: any, res) => {
     res.json({ success: true, withdrawalId });
 });
 
-app.put('/api/admin/withdrawals/:id', authMiddleware, adminMiddleware, (req, res) => {
+app.put('/api/admin/withdrawals/:id', authMiddleware, adminMiddleware, (req: any, res) => {
     const { id } = req.params;
     const { status, note } = req.body;
 
@@ -1827,7 +1827,7 @@ app.get('/api/admin/earnings', authMiddleware, adminMiddleware, (req, res) => {
     });
 });
 
-app.post('/api/admin/earnings', authMiddleware, adminMiddleware, (req, res) => {
+app.post('/api/admin/earnings', authMiddleware, adminMiddleware, (req: any, res) => {
     const { userId, month, amount, streams, downloads } = req.body;
 
     const earningId = `earning-${Date.now()}`;
@@ -1936,7 +1936,7 @@ app.get('/api/admin/users/:id', authMiddleware, adminMiddleware, (req: any, res)
     });
 });
 
-app.put('/api/admin/users/:id/ban', authMiddleware, adminMiddleware, (req, res) => {
+app.put('/api/admin/users/:id/ban', authMiddleware, adminMiddleware, (req: any, res) => {
     const { id } = req.params;
     const { reason } = req.body;
 
@@ -1945,7 +1945,7 @@ app.put('/api/admin/users/:id/ban', authMiddleware, adminMiddleware, (req, res) 
     res.json({ success: true });
 });
 
-app.put('/api/admin/users/:id/unban', authMiddleware, adminMiddleware, (req, res) => {
+app.put('/api/admin/users/:id/unban', authMiddleware, adminMiddleware, (req: any, res) => {
     const { id } = req.params;
     sqlite.db.prepare('UPDATE users SET is_banned = 0, ban_reason = NULL WHERE id = ?').run(id);
     sqlite.createLog({ level: 'WARN', message: 'User Unbanned', details: `ID: ${id}`, userId: req.userId });

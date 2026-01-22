@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Button, Input, Select, Badge } from '../components/ui.tsx';
 import { UploadCloud, CheckCircle, Music, Image as ImageIcon, Globe, FileText, Wand2, Copyright, Hash, Mic2, AlertTriangle, Play, Pause, Calendar, User as UserIcon, Plus, Trash2, Link as LinkIcon, Save, Lock, AlertOctagon, ChevronDown, ChevronUp, Disc, X } from 'lucide-react';
@@ -28,6 +29,9 @@ const ReleaseWizard: React.FC = () => {
     const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
+    // Upload Progress
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
     // -- Global Form State --
     const [user, setUser] = useState<any>(null);
     const [artistLibrary, setArtistLibrary] = useState<ReleaseArtist[]>([]);
@@ -38,6 +42,7 @@ const ReleaseWizard: React.FC = () => {
 
     // Tracks
     const [tracks, setTracks] = useState<Track[]>([]);
+    const [trackToDelete, setTrackToDelete] = useState<Track | null>(null);
 
     // Release Info
     const [releaseTitle, setReleaseTitle] = useState('');
@@ -236,6 +241,9 @@ const ReleaseWizard: React.FC = () => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
+        setUploadProgress(0); // Start progress
+        setCurrentStep(3); // Move to Details step immediately to show progress there
+
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const reader = new FileReader();
@@ -243,7 +251,13 @@ const ReleaseWizard: React.FC = () => {
             reader.onload = async (event) => {
                 try {
                     const base64 = event.target?.result as string;
-                    const result = await apiService.uploadFile(file.name, base64, 'audio');
+                    // Use new progress-aware upload
+                    const result = await apiService.uploadFileWithProgress(
+                        file.name,
+                        base64,
+                        'audio',
+                        (percent) => setUploadProgress(percent)
+                    );
 
                     const newTrack: Track = {
                         id: `trk-${Date.now()}-${i}`,
@@ -267,10 +281,16 @@ const ReleaseWizard: React.FC = () => {
                     setTracks(prev => [...prev, newTrack]);
                     if (tracks.length === 0) setReleaseTitle(newTrack.title);
                     setEditingTrackId(newTrack.id);
-                    if (currentStep === 2) setCurrentStep(3);
+
                 } catch (err) {
                     console.error('Failed to upload audio:', err);
                     alert('Failed to upload audio file');
+                } finally {
+                    // Reset progress after last file or on error
+                    if (i === files.length - 1) {
+                        setUploadProgress(null);
+                        // No need to change step here anymore
+                    }
                 }
             };
 
@@ -354,7 +374,7 @@ const ReleaseWizard: React.FC = () => {
     };
 
     const handleUpdateTrack = (id: string, updates: Partial<Track>) => {
-        setTracks(tracks.map(t => t.id === id ? { ...t, ...updates } : t));
+        setTracks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     };
 
     const handleUpdateArtist = (trackId: string, artistIndex: number, updates: Partial<ReleaseArtist>) => {
@@ -386,6 +406,28 @@ const ReleaseWizard: React.FC = () => {
         newArtists.splice(idx, 1);
         handleUpdateTrack(trackId, { artists: newArtists });
     };
+
+    const handleDeleteTrack = (trackId: string) => {
+        const track = tracks.find(t => t.id === trackId);
+        if (track) {
+            setTrackToDelete(track);
+        }
+    };
+
+    const confirmDelete = () => {
+        if (!trackToDelete) return;
+
+        setTracks(prev => prev.filter(t => t.id !== trackToDelete.id));
+        if (editingTrackId === trackToDelete.id) {
+            setEditingTrackId(null);
+        }
+        setTrackToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setTrackToDelete(null);
+    };
+
 
     const validateRelease = () => {
         if (!releaseTitle) { alert('Please enter a Release Title.'); return false; }
@@ -747,24 +789,47 @@ const ReleaseWizard: React.FC = () => {
                                     </div>
                                 </Card>
                             ) : (
-                                <label className="border border-dashed border-white/20 hover:border-indigo-500/50 hover:bg-white/5 bg-white/[0.02] rounded-[3rem] p-24 text-center transition-all cursor-pointer group backdrop-blur-sm block">
-                                    <input
-                                        type="file"
-                                        accept="audio/*,.wav,.flac,.aiff,.mp3"
-                                        multiple
-                                        className="hidden"
-                                        onChange={handleAudioUpload}
-                                    />
-                                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                                        <UploadCloud size={32} className="text-white/60 group-hover:text-white" />
-                                    </div>
-                                    <h3 className="text-3xl font-display font-bold text-white mb-3">Drop files here</h3>
-                                    <p className="text-white/50 text-sm mb-8">WAV, FLAC, AIFF, MP3 supported. Click to browse.</p>
-                                    <span className="inline-block bg-white/10 hover:bg-white/20 text-white px-10 py-3 rounded-full text-sm font-medium transition-colors">Browse Files</span>
-                                </label>
+                                <>
+                                    {uploadProgress !== null ? (
+                                        <Card className="py-24 flex flex-col items-center justify-center text-center">
+                                            <div className="w-full max-w-md space-y-4">
+                                                <div className="flex justify-between text-sm text-gray-400">
+                                                    <span>Uploading...</span>
+                                                    <span>{Math.round(uploadProgress)}%</span>
+                                                </div>
+                                                <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-indigo-500 transition-all duration-300 ease-out relative overflow-hidden"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    >
+                                                        {/* Shine effect */}
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-full -translate-x-full animate-[shimmer_1.5s_infinite]" />
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-gray-500 animate-pulse">Please wait while we process your audio...</p>
+                                            </div>
+                                        </Card>
+                                    ) : (
+                                        <label className="border border-dashed border-white/20 hover:border-indigo-500/50 hover:bg-white/5 bg-white/[0.02] rounded-[3rem] p-24 text-center transition-all cursor-pointer group backdrop-blur-sm block">
+                                            <input
+                                                type="file"
+                                                accept="audio/*,.wav,.flac,.aiff,.mp3"
+                                                multiple
+                                                className="hidden"
+                                                onChange={handleAudioUpload}
+                                            />
+                                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                                                <UploadCloud size={32} className="text-white/60 group-hover:text-white" />
+                                            </div>
+                                            <h3 className="text-3xl font-display font-bold text-white mb-3">Drop files here</h3>
+                                            <p className="text-white/50 text-sm mb-8">WAV, FLAC, AIFF, MP3 supported. Click to browse.</p>
+                                            <span className="inline-block bg-white/10 hover:bg-white/20 text-white px-10 py-3 rounded-full text-sm font-medium transition-colors">Browse Files</span>
+                                        </label>
+                                    )}
+                                </>
                             )}
 
-                            {tracks.length > 0 && !isEditingExisting && (
+                            {tracks.length > 0 && !isEditingExisting && uploadProgress === null && (
                                 <Card>
                                     <h4 className="text-white font-bold mb-6 text-lg">Uploaded Tracks</h4>
                                     {tracks.map((t, i) => (
@@ -818,383 +883,416 @@ const ReleaseWizard: React.FC = () => {
 
                     {/* Step 3: Track Details */}
                     {currentStep === 3 && (
-                        <div className="animate-fade-in flex flex-col gap-8">
-                            <Card className="min-h-[600px] flex flex-col">
-                                <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-6">
-                                    <h2 className="text-2xl font-bold font-display text-white">Track List</h2>
-                                    <div className="flex items-center gap-4">
-                                        <Button variant="secondary" onClick={handleSaveDraft} className="h-10 px-4 text-xs border-dashed border-white/20">
-                                            <Save size={14} className="mr-2" /> Save & Exit
-                                        </Button>
-                                        {!isEditingExisting && (
-                                            <label className="cursor-pointer">
-                                                <span className="flex items-center justify-center bg-[#6366f1] text-white hover:bg-[#5558e6] shadow-lg shadow-indigo-500/30 border-2 border-transparent h-10 px-6 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-wise-ease">
-                                                    <Plus size={16} className="mr-2" /> Add Track
-                                                </span>
-                                                <input type="file" className="hidden" multiple accept="audio/*" onChange={handleAudioUpload} />
-                                            </label>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    {tracks.length === 0 && (
-                                        <div className="text-center py-12 text-white/30 border border-dashed border-white/10 rounded-3xl">
-                                            No tracks added yet. Click 'Add Track' to begin.
+                        <div className="relative min-h-[600px]">
+                            {uploadProgress !== null ? (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+                                    <style>{`
+                                        @keyframes shimmer {
+                                            100% { transform: translateX(100%); }
+                                        }
+                                    `}</style>
+                                    <Card className="py-16 flex flex-col items-center justify-center text-center w-full max-w-xl border-indigo-500/30 shadow-2xl shadow-indigo-500/10 bg-[#0A0A12]">
+                                        <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                            <UploadCloud size={32} className="text-indigo-400" />
                                         </div>
-                                    )}
-                                    {tracks.map((track, i) => (
-                                        <div key={track.id} className={`rounded-[30px] border transition-all duration-300 ${editingTrackId === track.id ? 'bg-[#15151A] border-indigo-500/50 shadow-2xl shadow-black/50' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
-                                            <div
-                                                className="p-6 flex items-center justify-between cursor-pointer"
-                                                onClick={() => toggleTrackEdit(track.id)}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/50">
-                                                        {i + 1}
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${playingTrackId === track.id ? 'bg-green-500 text-black shadow-green-500/20 scale-110' : 'bg-white text-black hover:bg-gray-200 hover:scale-105'}`}
-                                                        onClick={(e) => { e.stopPropagation(); handlePlayPreview(track); }}
-                                                    >
-                                                        {playingTrackId === track.id ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
-                                                    </button>
-                                                    <div>
-                                                        <h3 className="text-lg font-bold text-white font-display">{track.title}</h3>
-                                                        <p className="text-xs text-white/50">{track.artists.map(a => a.name).join(', ')}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (confirm(`"${track.title}" track'ını silmek istediğinize emin misiniz?`)) {
-                                                                setTracks(tracks.filter(t => t.id !== track.id));
-                                                            }
-                                                        }}
-                                                        className="p-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors"
-                                                        title="Track'ı Sil"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                    <div className={`p-2 rounded-full transition-transform duration-300 ${editingTrackId === track.id ? 'rotate-180 bg-white/10 text-white' : 'text-white/30'}`}>
-                                                        <ChevronDown size={20} />
-                                                    </div>
+                                        <h3 className="text-2xl font-bold text-white mb-2 font-display">Uploading Track...</h3>
+                                        <div className="w-full max-w-sm space-y-3 mt-4">
+                                            <div className="flex justify-between text-xs text-gray-400 font-mono uppercase tracking-widest">
+                                                <span>Processing Audio</span>
+                                                <span>{Math.round(uploadProgress)}%</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-indigo-500 transition-all duration-300 ease-out relative overflow-hidden"
+                                                    style={{ width: `${uploadProgress}%` }}
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent w-full -translate-x-full animate-[shimmer_1s_infinite]" />
                                                 </div>
                                             </div>
+                                        </div>
+                                        <p className="text-xs text-indigo-300/60 animate-pulse mt-6">
+                                            Analyzing waveform & metadata...
+                                        </p>
+                                    </Card>
+                                </div>
+                            ) : (
+                                <div className="animate-fade-in flex flex-col gap-8">
+                                    <Card className="min-h-[600px] flex flex-col">
+                                        <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-6">
+                                            <h2 className="text-2xl font-bold font-display text-white">Track List</h2>
+                                            <div className="flex items-center gap-4">
+                                                <Button variant="secondary" onClick={handleSaveDraft} className="h-10 px-4 text-xs border-dashed border-white/20">
+                                                    <Save size={14} className="mr-2" /> Save & Exit
+                                                </Button>
+                                                {!isEditingExisting && (
+                                                    <label className="cursor-pointer">
+                                                        <span className="flex items-center justify-center bg-[#6366f1] text-white hover:bg-[#5558e6] shadow-lg shadow-indigo-500/30 border-2 border-transparent h-10 px-6 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-wise-ease">
+                                                            <Plus size={16} className="mr-2" /> Add Track
+                                                        </span>
+                                                        <input type="file" className="hidden" multiple accept="audio/*" onChange={handleAudioUpload} />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                            {editingTrackId === track.id && (
-                                                <div className="p-8 pt-0 border-t border-white/5 animate-fade-in">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                                        <div className="col-span-2">
-                                                            <Input label="Track Title" value={track.title} onChange={e => handleUpdateTrack(track.id, { title: e.target.value })} />
-                                                        </div>
-                                                        <Select
-                                                            label="Version"
-                                                            options={[{ value: '', label: 'Original Mix' }, { value: 'Radio Edit', label: 'Radio Edit' }, { value: 'Remix', label: 'Remix' }, { value: 'Live', label: 'Live' }]}
-                                                            value={track.version || ''}
-                                                            onChange={e => handleUpdateTrack(track.id, { version: e.target.value })}
-                                                        />
-                                                        {/* Per Track Genre */}
-                                                        <Select label="Genre" options={GENRES.map(g => ({ value: g, label: g }))} value={track.genre || ''} onChange={e => handleUpdateTrack(track.id, { genre: e.target.value })} />
-                                                        <Input label="Sub-Genre" value={track.subGenre || ''} onChange={e => handleUpdateTrack(track.id, { subGenre: e.target.value })} />
-
-                                                        <Input label="ISRC Code" placeholder="Auto-generate if empty" value={track.isrc || ''} onChange={e => handleUpdateTrack(track.id, { isrc: e.target.value })} disabled={isEditingExisting && !!track.isrc} />
-                                                        <Select
-                                                            label="Language"
-                                                            options={LANGUAGES.map(l => ({ value: l, label: l }))}
-                                                            value={track.language}
-                                                            onChange={e => handleUpdateTrack(track.id, { language: e.target.value })}
-                                                        />
-                                                        <Select
-                                                            label="Explicit Content"
-                                                            options={[{ value: 'false', label: 'Clean / No Lyrics' }, { value: 'true', label: 'Explicit' }]}
-                                                            value={String(track.isExplicit)}
-                                                            onChange={e => handleUpdateTrack(track.id, { isExplicit: e.target.value === 'true' })}
-                                                        />
-                                                        {/* Instrumental & Content Ownership */}
-                                                        <div className="flex flex-col gap-4 bg-white/5 p-4 rounded-xl border border-white/10 mt-2">
-                                                            <div className="flex items-center justify-between cursor-pointer" onClick={() => handleUpdateTrack(track.id, { isInstrumental: !track.isInstrumental })}>
-                                                                <div>
-                                                                    <span className="text-sm text-white font-bold block">Instrumental</span>
-                                                                    <span className="text-xs text-[#888]">No lyrics / vocals (Skips Lyricist check)</span>
-                                                                </div>
-                                                                <div className={`w-10 h-6 rounded-full relative transition-colors ${track.isInstrumental ? 'bg-green-500' : 'bg-gray-600'}`}>
-                                                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${track.isInstrumental ? 'translate-x-4' : 'translate-x-0'}`} />
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="pt-4 border-t border-white/10">
-                                                                <span className="text-xs font-bold text-white/60 block mb-2 uppercase tracking-wider">Content Ownership</span>
-                                                                <div className="flex flex-col gap-2">
-                                                                    <label className="flex items-center gap-2 cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`contentType-${track.id}`}
-                                                                            checked={track.copyrightType !== 'Licensed'}
-                                                                            onChange={() => handleUpdateTrack(track.id, { copyrightType: 'Original' })}
-                                                                            className="accent-indigo-500"
-                                                                        />
-                                                                        <span className="text-white text-sm">100% Original (My Content)</span>
-                                                                    </label>
-                                                                    <label className="flex items-center gap-2 cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`contentType-${track.id}`}
-                                                                            checked={track.copyrightType === 'Licensed'}
-                                                                            onChange={() => handleUpdateTrack(track.id, { copyrightType: 'Licensed' })}
-                                                                            className="accent-indigo-500"
-                                                                        />
-                                                                        <span className="text-white text-sm">Contains Samples (License Required)</span>
-                                                                    </label>
-                                                                </div>
-                                                                {track.copyrightType === 'Licensed' && (
-                                                                    <p className="text-xs text-yellow-500 mt-2 flex items-center gap-1">
-                                                                        <AlertTriangle size={12} /> Verification docs required in Step 5.
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Artists Section */}
-                                                    <div
-                                                        className={`mt-8 bg-black/20 rounded-3xl p-6 border transition-all duration-500 ${highlightError === 'producer' ? 'border-red-500 ring-2 ring-red-500/50 animate-pulse' : 'border-white/5'}`}
-                                                        id="artists-section"
-                                                    >
-                                                        {highlightError === 'producer' && (
-                                                            <div className="mb-4 p-3 bg-red-900/30 border border-red-500 rounded-xl flex items-center gap-2">
-                                                                <AlertOctagon size={20} className="text-red-400 shrink-0" />
-                                                                <span className="text-sm text-red-300">Add at least one "Producer" to continue!</span>
-                                                                <button className="ml-auto text-red-400 hover:text-white" onClick={() => setHighlightError(null)}>✕</button>
-                                                            </div>
-                                                        )}
-                                                        <h4 className="text-sm font-bold text-white/70 uppercase tracking-widest mb-4">Artists & Performers</h4>
-                                                        {track.artists.map((artist, idx) => (
-                                                            <div key={artist.id} className="mb-6 pb-6 border-b border-white/5 last:border-0 last:mb-0 last:pb-0">
-                                                                {/* Row 1: Artist Name + Save Button */}
-                                                                <div className="flex gap-3 mb-4 items-end">
-                                                                    <div className="flex-1 relative">
-                                                                        <Input
-                                                                            label="Artist / Stage Name"
-                                                                            placeholder="Search library or type new..."
-                                                                            value={artist.name}
-                                                                            onChange={e => handleArtistNameChange(track.id, idx, e.target.value)}
-                                                                            autoComplete="off"
-                                                                        />
-                                                                        {artist.name && artistLibrary.filter(a => a.name.toLowerCase().includes(artist.name.toLowerCase()) && a.name.toLowerCase() !== artist.name.toLowerCase()).length > 0 && (
-                                                                            <div className="absolute z-50 w-full bg-[#1A1A1A] border border-[#333] rounded-xl mt-1 max-h-40 overflow-y-auto shadow-xl">
-                                                                                {artistLibrary.filter(a => a.name.toLowerCase().includes(artist.name.toLowerCase())).slice(0, 5).map(a => (
-                                                                                    <button
-                                                                                        key={a.id}
-                                                                                        type="button"
-                                                                                        className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm flex flex-col"
-                                                                                        onClick={() => {
-                                                                                            handleUpdateArtist(track.id, idx, {
-                                                                                                name: a.name,
-                                                                                                legalName: a.legalName,
-                                                                                                spotifyUrl: a.spotifyUrl,
-                                                                                                appleId: a.appleId
-                                                                                            });
-                                                                                        }}
-                                                                                    >
-                                                                                        <span className="font-medium">{a.name}</span>
-                                                                                        {a.legalName && <span className="text-xs text-[#666]">Legal: {a.legalName}</span>}
-                                                                                    </button>
-                                                                                ))}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    <Button
-                                                                        variant="secondary"
-                                                                        className="h-[60px] w-[60px] px-0 mb-5 shrink-0"
-                                                                        title="Save to Library"
-                                                                        onClick={() => saveArtistToLibrary(artist)}
-                                                                    >
-                                                                        <Save size={20} />
-                                                                    </Button>
-                                                                </div>
-                                                                {/* Row 2: Role + Legal Name + Spotify */}
-                                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                                    <Select
-                                                                        label="Role"
-                                                                        options={[
-                                                                            { value: 'Primary Artist', label: 'Primary Artist' },
-                                                                            { value: 'Featured', label: 'Featured Artist' },
-                                                                            { value: 'Remixer', label: 'Remixer' },
-                                                                            { value: 'Producer', label: 'Producer' },
-                                                                            { value: 'Contributor', label: 'Contributor' }
-                                                                        ]}
-                                                                        value={artist.role}
-                                                                        onChange={e => handleUpdateArtist(track.id, idx, { role: e.target.value as any })}
-                                                                    />
-                                                                    <Input
-                                                                        label="Legal Name (Optional)"
-                                                                        placeholder="e.g. Jacques Webster"
-                                                                        value={artist.legalName || ''}
-                                                                        onChange={e => handleUpdateArtist(track.id, idx, { legalName: e.target.value })}
-                                                                    />
-                                                                    <Input
-                                                                        label="Spotify Artist URL (Optional)"
-                                                                        placeholder="https://open.spotify.com/artist/..."
-                                                                        value={artist.spotifyUrl || ''}
-                                                                        onChange={e => handleUpdateArtist(track.id, idx, { spotifyUrl: e.target.value })}
-                                                                    />
-                                                                </div>
-                                                                <Button variant="danger" className="mt-4 h-10 text-xs" onClick={() => handleRemoveArtist(track.id, idx)}>
-                                                                    <Trash2 size={14} className="mr-2" /> Remove Artist
-                                                                </Button>
-                                                            </div>
-                                                        ))}
-                                                        <Button variant="secondary" onClick={() => handleAddArtist(track.id)} className="w-full h-12 text-sm mt-2 border-dashed border-white/20">
-                                                            + Add Artist / Performer
-                                                        </Button>
-                                                    </div>
-
-                                                    {/* Writers Section - Composers, Lyricists, Songwriters */}
-                                                    <div
-                                                        className={`mt-8 bg-purple-900/10 rounded-3xl p-6 border transition-all duration-500 ${highlightError === 'writer' ? 'border-red-500 ring-2 ring-red-500/50 animate-pulse' : 'border-purple-500/20'}`}
-                                                        id="writers-section"
-                                                    >
-                                                        {highlightError === 'writer' && (
-                                                            <div className="mb-4 p-3 bg-red-900/30 border border-red-500 rounded-xl flex items-center gap-2">
-                                                                <AlertOctagon size={20} className="text-red-400 shrink-0" />
-                                                                <span className="text-sm text-red-300">Add at least one Songwriter/Composer with name to continue!</span>
-                                                                <button className="ml-auto text-red-400 hover:text-white" onClick={() => setHighlightError(null)}>✕</button>
-                                                            </div>
-                                                        )}
-                                                        <h4 className="text-sm font-bold text-purple-300 uppercase tracking-widest mb-4">Songwriters & Composers</h4>
-                                                        <p className="text-xs text-purple-200/60 mb-4">Add everyone who wrote the lyrics or composed the music.</p>
-
-                                                        {(track.writers || []).map((writer: any, wIdx: number) => (
-                                                            <div key={writer.id} className="mb-4 pb-4 border-b border-purple-500/10 last:border-0">
-                                                                <div className="grid grid-cols-12 gap-4 items-end">
-                                                                    {/* Role */}
-                                                                    <div className="col-span-12 md:col-span-3">
-                                                                        <Select
-                                                                            label="Role"
-                                                                            options={[
-                                                                                { value: 'Songwriter', label: 'Songwriter' },
-                                                                                { value: 'Composer', label: 'Composer (Music)' },
-                                                                                { value: 'Lyricist', label: 'Lyricist (Lyrics)' }
-                                                                            ]}
-                                                                            value={writer.role}
-                                                                            onChange={e => {
-                                                                                const newWriters = [...(track.writers || [])];
-                                                                                newWriters[wIdx] = { ...newWriters[wIdx], role: e.target.value };
-                                                                                handleUpdateTrack(track.id, { writers: newWriters });
-                                                                            }}
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Legal Name */}
-                                                                    <div className="col-span-12 md:col-span-5 relative">
-                                                                        <Input
-                                                                            label="Full Legal Name"
-                                                                            placeholder="e.g. John Smith"
-                                                                            value={writer.legalName || writer.name || ''}
-                                                                            onChange={e => {
-                                                                                const newWriters = [...(track.writers || [])];
-                                                                                newWriters[wIdx] = { ...newWriters[wIdx], legalName: e.target.value, name: e.target.value };
-                                                                                handleUpdateTrack(track.id, { writers: newWriters });
-                                                                            }}
-                                                                            autoComplete="off"
-                                                                        />
-                                                                        {/* Dropdown Logic */}
-                                                                        {(writer.name || writer.legalName) && writerLibrary.filter(w => w.name.toLowerCase().includes((writer.name || writer.legalName || '').toLowerCase()) && w.name.toLowerCase() !== (writer.name || writer.legalName || '').toLowerCase()).length > 0 && (
-                                                                            <div className="absolute z-50 w-full bg-[#1A1A1A] border border-[#333] rounded-xl mt-1 max-h-40 overflow-y-auto shadow-xl">
-                                                                                {writerLibrary.filter(w => w.name.toLowerCase().includes((writer.name || writer.legalName || '').toLowerCase())).slice(0, 5).map(w => (
-                                                                                    <button
-                                                                                        key={w.id}
-                                                                                        type="button"
-                                                                                        className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm flex flex-col"
-                                                                                        onClick={() => {
-                                                                                            const newWriters = [...(track.writers || [])];
-                                                                                            newWriters[wIdx] = { ...newWriters[wIdx], name: w.name, legalName: w.legalName || w.name, role: w.role || 'Songwriter' };
-                                                                                            handleUpdateTrack(track.id, { writers: newWriters });
-                                                                                        }}
-                                                                                    >
-                                                                                        <span className="font-medium">{w.name}</span>
-                                                                                        <span className="text-xs text-[#666]">{w.role}</span>
-                                                                                    </button>
-                                                                                ))}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-
-                                                                    {/* Share % */}
-                                                                    <div className="col-span-6 md:col-span-2">
-                                                                        <Input
-                                                                            label="Share %"
-                                                                            type="number"
-                                                                            placeholder="50"
-                                                                            value={writer.share || ''}
-                                                                            onChange={e => {
-                                                                                const newWriters = [...(track.writers || [])];
-                                                                                newWriters[wIdx] = { ...newWriters[wIdx], share: parseInt(e.target.value) || 0 };
-                                                                                handleUpdateTrack(track.id, { writers: newWriters });
-                                                                            }}
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Actions */}
-                                                                    <div className="col-span-6 md:col-span-2 flex gap-2 mb-5">
-                                                                        <Button
-                                                                            variant="secondary"
-                                                                            className="h-[60px] flex-1 px-0"
-                                                                            title="Save to Library"
-                                                                            onClick={() => saveWriterToLibrary(writer)}
-                                                                        >
-                                                                            <Save size={20} />
-                                                                        </Button>
-                                                                        <Button variant="danger" className="h-[60px] flex-1 px-0" onClick={() => {
-                                                                            const newWriters = (track.writers || []).filter((_: any, i: number) => i !== wIdx);
-                                                                            handleUpdateTrack(track.id, { writers: newWriters });
-                                                                        }}>
-                                                                            <Trash2 size={20} />
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-
-                                                        <Button variant="secondary" className="w-full h-12 text-sm border-dashed border-purple-500/30 text-purple-300" onClick={() => {
-                                                            const newWriter = { id: `writer-${Date.now()}`, name: '', legalName: '', role: 'Songwriter', share: 100 };
-                                                            handleUpdateTrack(track.id, { writers: [...(track.writers || []), newWriter] });
-                                                        }}>
-                                                            + Add Songwriter / Composer
-                                                        </Button>
-                                                    </div>
-
-                                                    <div className="mt-8 p-6 bg-indigo-900/10 border border-indigo-500/20 rounded-3xl">
-                                                        <h4 className="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-4">Rights & AI</h4>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <Select
-                                                                label="Composition"
-                                                                options={[{ value: 'Original', label: 'Original Composition' }, { value: 'Cover', label: 'Cover Song' }]}
-                                                                value={track.compositionType}
-                                                                onChange={e => handleUpdateTrack(track.id, { compositionType: e.target.value as any })}
-                                                            />
-                                                            <Select
-                                                                label="AI Usage"
-                                                                options={[{ value: 'None', label: 'No AI Used' }, { value: 'Partial', label: 'AI Assisted' }, { value: 'Full', label: 'Fully AI Generated' }]}
-                                                                value={track.aiUsage}
-                                                                onChange={e => handleUpdateTrack(track.id, { aiUsage: e.target.value as any })}
-                                                            />
-                                                        </div>
-                                                    </div>
+                                        <div className="space-y-4">
+                                            {tracks.length === 0 && (
+                                                <div className="text-center py-12 text-white/30 border border-dashed border-white/10 rounded-3xl">
+                                                    No tracks added yet. Click 'Add Track' to begin.
                                                 </div>
                                             )}
-                                        </div>
-                                    ))}
-                                </div>
+                                            {tracks.map((track, i) => (
+                                                <div key={track.id} className={`rounded-[30px] border transition-all duration-300 ${editingTrackId === track.id ? 'bg-[#15151A] border-indigo-500/50 shadow-2xl shadow-black/50' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                                                    <div
+                                                        className="p-6 flex items-center justify-between cursor-pointer"
+                                                        onClick={() => toggleTrackEdit(track.id)}
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/50">
+                                                                {i + 1}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${playingTrackId === track.id ? 'bg-green-500 text-black shadow-green-500/20 scale-110' : 'bg-white text-black hover:bg-gray-200 hover:scale-105'}`}
+                                                                onClick={(e) => { e.stopPropagation(); handlePlayPreview(track); }}
+                                                            >
+                                                                {playingTrackId === track.id ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
+                                                            </button>
+                                                            <div>
+                                                                <h3 className="text-lg font-bold text-white font-display">{track.title}</h3>
+                                                                <p className="text-xs text-white/50">{track.artists.map(a => a.name).join(', ')}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteTrack(track.id);
+                                                                }}
+                                                                className="p-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors"
+                                                                title="Track'ı Sil"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                            <div className={`p-2 rounded-full transition-transform duration-300 ${editingTrackId === track.id ? 'rotate-180 bg-white/10 text-white' : 'text-white/30'}`}>
+                                                                <ChevronDown size={20} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                                <div className="mt-auto pt-8 flex justify-end">
-                                    <Button variant="accent" onClick={validateTracks}>Next: Metadata</Button>
+                                                    {editingTrackId === track.id && (
+                                                        <div className="p-8 pt-0 border-t border-white/5 animate-fade-in">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                                                <div className="col-span-2">
+                                                                    <Input label="Track Title" value={track.title} onChange={e => handleUpdateTrack(track.id, { title: e.target.value })} />
+                                                                </div>
+                                                                <Select
+                                                                    label="Version"
+                                                                    options={[{ value: '', label: 'Original Mix' }, { value: 'Radio Edit', label: 'Radio Edit' }, { value: 'Remix', label: 'Remix' }, { value: 'Live', label: 'Live' }]}
+                                                                    value={track.version || ''}
+                                                                    onChange={e => handleUpdateTrack(track.id, { version: e.target.value })}
+                                                                />
+                                                                {/* Per Track Genre */}
+                                                                <Select label="Genre" options={GENRES.map(g => ({ value: g, label: g }))} value={track.genre || ''} onChange={e => handleUpdateTrack(track.id, { genre: e.target.value })} />
+                                                                <Input label="Sub-Genre" value={track.subGenre || ''} onChange={e => handleUpdateTrack(track.id, { subGenre: e.target.value })} />
+
+                                                                <Input label="ISRC Code" placeholder="Auto-generate if empty" value={track.isrc || ''} onChange={e => handleUpdateTrack(track.id, { isrc: e.target.value })} disabled={isEditingExisting && !!track.isrc} />
+                                                                <Select
+                                                                    label="Language"
+                                                                    options={LANGUAGES.map(l => ({ value: l, label: l }))}
+                                                                    value={track.language}
+                                                                    onChange={e => handleUpdateTrack(track.id, { language: e.target.value })}
+                                                                />
+                                                                <Select
+                                                                    label="Explicit Content"
+                                                                    options={[{ value: 'false', label: 'Clean / No Lyrics' }, { value: 'true', label: 'Explicit' }]}
+                                                                    value={String(track.isExplicit)}
+                                                                    onChange={e => handleUpdateTrack(track.id, { isExplicit: e.target.value === 'true' })}
+                                                                />
+                                                                {/* Instrumental & Content Ownership */}
+                                                                <div className="flex flex-col gap-4 bg-white/5 p-4 rounded-xl border border-white/10 mt-2">
+                                                                    <div className="flex items-center justify-between cursor-pointer" onClick={() => handleUpdateTrack(track.id, { isInstrumental: !track.isInstrumental })}>
+                                                                        <div>
+                                                                            <span className="text-sm text-white font-bold block">Instrumental</span>
+                                                                            <span className="text-xs text-[#888]">No lyrics / vocals (Skips Lyricist check)</span>
+                                                                        </div>
+                                                                        <div className={`w-10 h-6 rounded-full relative transition-colors ${track.isInstrumental ? 'bg-green-500' : 'bg-gray-600'}`}>
+                                                                            <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${track.isInstrumental ? 'translate-x-4' : 'translate-x-0'}`} />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="pt-4 border-t border-white/10">
+                                                                        <span className="text-xs font-bold text-white/60 block mb-2 uppercase tracking-wider">Content Ownership</span>
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                                                <input
+                                                                                    type="radio"
+                                                                                    name={`contentType-${track.id}`}
+                                                                                    checked={track.copyrightType !== 'Licensed'}
+                                                                                    onChange={() => handleUpdateTrack(track.id, { copyrightType: 'Original' })}
+                                                                                    className="accent-indigo-500"
+                                                                                />
+                                                                                <span className="text-white text-sm">100% Original (My Content)</span>
+                                                                            </label>
+                                                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                                                <input
+                                                                                    type="radio"
+                                                                                    name={`contentType-${track.id}`}
+                                                                                    checked={track.copyrightType === 'Licensed'}
+                                                                                    onChange={() => handleUpdateTrack(track.id, { copyrightType: 'Licensed' })}
+                                                                                    className="accent-indigo-500"
+                                                                                />
+                                                                                <span className="text-white text-sm">Contains Samples (License Required)</span>
+                                                                            </label>
+                                                                        </div>
+                                                                        {track.copyrightType === 'Licensed' && (
+                                                                            <p className="text-xs text-yellow-500 mt-2 flex items-center gap-1">
+                                                                                <AlertTriangle size={12} /> Verification docs required in Step 5.
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Artists Section */}
+                                                            <div
+                                                                className={`mt-8 bg-black/20 rounded-3xl p-6 border transition-all duration-500 ${highlightError === 'producer' ? 'border-red-500 ring-2 ring-red-500/50 animate-pulse' : 'border-white/5'}`}
+                                                                id="artists-section"
+                                                            >
+                                                                {highlightError === 'producer' && (
+                                                                    <div className="mb-4 p-3 bg-red-900/30 border border-red-500 rounded-xl flex items-center gap-2">
+                                                                        <AlertOctagon size={20} className="text-red-400 shrink-0" />
+                                                                        <span className="text-sm text-red-300">Add at least one "Producer" to continue!</span>
+                                                                        <button className="ml-auto text-red-400 hover:text-white" onClick={() => setHighlightError(null)}>✕</button>
+                                                                    </div>
+                                                                )}
+                                                                <h4 className="text-sm font-bold text-white/70 uppercase tracking-widest mb-4">Artists & Performers</h4>
+                                                                {track.artists.map((artist, idx) => (
+                                                                    <div key={artist.id} className="mb-6 pb-6 border-b border-white/5 last:border-0 last:mb-0 last:pb-0">
+                                                                        {/* Row 1: Artist Name + Save Button */}
+                                                                        <div className="flex gap-3 mb-4 items-end">
+                                                                            <div className="flex-1 relative">
+                                                                                <Input
+                                                                                    label="Artist / Stage Name"
+                                                                                    placeholder="Search library or type new..."
+                                                                                    value={artist.name}
+                                                                                    onChange={e => handleArtistNameChange(track.id, idx, e.target.value)}
+                                                                                    autoComplete="off"
+                                                                                />
+                                                                                {artist.name && artistLibrary.filter(a => a.name.toLowerCase().includes(artist.name.toLowerCase()) && a.name.toLowerCase() !== artist.name.toLowerCase()).length > 0 && (
+                                                                                    <div className="absolute z-50 w-full bg-[#1A1A1A] border border-[#333] rounded-xl mt-1 max-h-40 overflow-y-auto shadow-xl">
+                                                                                        {artistLibrary.filter(a => a.name.toLowerCase().includes(artist.name.toLowerCase())).slice(0, 5).map(a => (
+                                                                                            <button
+                                                                                                key={a.id}
+                                                                                                type="button"
+                                                                                                className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm flex flex-col"
+                                                                                                onClick={() => {
+                                                                                                    handleUpdateArtist(track.id, idx, {
+                                                                                                        name: a.name,
+                                                                                                        legalName: a.legalName,
+                                                                                                        spotifyUrl: a.spotifyUrl,
+                                                                                                        appleId: a.appleId
+                                                                                                    });
+                                                                                                }}
+                                                                                            >
+                                                                                                <span className="font-medium">{a.name}</span>
+                                                                                                {a.legalName && <span className="text-xs text-[#666]">Legal: {a.legalName}</span>}
+                                                                                            </button>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            <Button
+                                                                                variant="secondary"
+                                                                                className="h-[60px] w-[60px] px-0 mb-5 shrink-0"
+                                                                                title="Save to Library"
+                                                                                onClick={() => saveArtistToLibrary(artist)}
+                                                                            >
+                                                                                <Save size={20} />
+                                                                            </Button>
+                                                                        </div>
+                                                                        {/* Row 2: Role + Legal Name + Spotify */}
+                                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                            <Select
+                                                                                label="Role"
+                                                                                options={[
+                                                                                    { value: 'Primary Artist', label: 'Primary Artist' },
+                                                                                    { value: 'Featured', label: 'Featured Artist' },
+                                                                                    { value: 'Remixer', label: 'Remixer' },
+                                                                                    { value: 'Producer', label: 'Producer' },
+                                                                                    { value: 'Contributor', label: 'Contributor' }
+                                                                                ]}
+                                                                                value={artist.role}
+                                                                                onChange={e => handleUpdateArtist(track.id, idx, { role: e.target.value as any })}
+                                                                            />
+                                                                            <Input
+                                                                                label="Legal Name (Optional)"
+                                                                                placeholder="e.g. Jacques Webster"
+                                                                                value={artist.legalName || ''}
+                                                                                onChange={e => handleUpdateArtist(track.id, idx, { legalName: e.target.value })}
+                                                                            />
+                                                                            <Input
+                                                                                label="Spotify Artist URL (Optional)"
+                                                                                placeholder="https://open.spotify.com/artist/..."
+                                                                                value={artist.spotifyUrl || ''}
+                                                                                onChange={e => handleUpdateArtist(track.id, idx, { spotifyUrl: e.target.value })}
+                                                                            />
+                                                                        </div>
+                                                                        <Button variant="danger" className="mt-4 h-10 text-xs" onClick={() => handleRemoveArtist(track.id, idx)}>
+                                                                            <Trash2 size={14} className="mr-2" /> Remove Artist
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                                <Button variant="secondary" onClick={() => handleAddArtist(track.id)} className="w-full h-12 text-sm mt-2 border-dashed border-white/20">
+                                                                    + Add Artist / Performer
+                                                                </Button>
+                                                            </div>
+
+                                                            {/* Writers Section - Composers, Lyricists, Songwriters */}
+                                                            <div
+                                                                className={`mt-8 bg-purple-900/10 rounded-3xl p-6 border transition-all duration-500 ${highlightError === 'writer' ? 'border-red-500 ring-2 ring-red-500/50 animate-pulse' : 'border-purple-500/20'}`}
+                                                                id="writers-section"
+                                                            >
+                                                                {highlightError === 'writer' && (
+                                                                    <div className="mb-4 p-3 bg-red-900/30 border border-red-500 rounded-xl flex items-center gap-2">
+                                                                        <AlertOctagon size={20} className="text-red-400 shrink-0" />
+                                                                        <span className="text-sm text-red-300">Add at least one Songwriter/Composer with name to continue!</span>
+                                                                        <button className="ml-auto text-red-400 hover:text-white" onClick={() => setHighlightError(null)}>✕</button>
+                                                                    </div>
+                                                                )}
+                                                                <h4 className="text-sm font-bold text-purple-300 uppercase tracking-widest mb-4">Songwriters & Composers</h4>
+                                                                <p className="text-xs text-purple-200/60 mb-4">Add everyone who wrote the lyrics or composed the music.</p>
+
+                                                                {(track.writers || []).map((writer: any, wIdx: number) => (
+                                                                    <div key={writer.id} className="mb-4 pb-4 border-b border-purple-500/10 last:border-0">
+                                                                        <div className="grid grid-cols-12 gap-4 items-end">
+                                                                            {/* Role */}
+                                                                            <div className="col-span-12 md:col-span-3">
+                                                                                <Select
+                                                                                    label="Role"
+                                                                                    options={[
+                                                                                        { value: 'Songwriter', label: 'Songwriter' },
+                                                                                        { value: 'Composer', label: 'Composer (Music)' },
+                                                                                        { value: 'Lyricist', label: 'Lyricist (Lyrics)' }
+                                                                                    ]}
+                                                                                    value={writer.role}
+                                                                                    onChange={e => {
+                                                                                        const newWriters = [...(track.writers || [])];
+                                                                                        newWriters[wIdx] = { ...newWriters[wIdx], role: e.target.value };
+                                                                                        handleUpdateTrack(track.id, { writers: newWriters });
+                                                                                    }}
+                                                                                />
+                                                                            </div>
+
+                                                                            {/* Legal Name */}
+                                                                            <div className="col-span-12 md:col-span-5 relative">
+                                                                                <Input
+                                                                                    label="Full Legal Name"
+                                                                                    placeholder="e.g. John Smith"
+                                                                                    value={writer.legalName || writer.name || ''}
+                                                                                    onChange={e => {
+                                                                                        const newWriters = [...(track.writers || [])];
+                                                                                        newWriters[wIdx] = { ...newWriters[wIdx], legalName: e.target.value, name: e.target.value };
+                                                                                        handleUpdateTrack(track.id, { writers: newWriters });
+                                                                                    }}
+                                                                                    autoComplete="off"
+                                                                                />
+                                                                                {/* Dropdown Logic */}
+                                                                                {(writer.name || writer.legalName) && writerLibrary.filter(w => w.name.toLowerCase().includes((writer.name || writer.legalName || '').toLowerCase()) && w.name.toLowerCase() !== (writer.name || writer.legalName || '').toLowerCase()).length > 0 && (
+                                                                                    <div className="absolute z-50 w-full bg-[#1A1A1A] border border-[#333] rounded-xl mt-1 max-h-40 overflow-y-auto shadow-xl">
+                                                                                        {writerLibrary.filter(w => w.name.toLowerCase().includes((writer.name || writer.legalName || '').toLowerCase())).slice(0, 5).map(w => (
+                                                                                            <button
+                                                                                                key={w.id}
+                                                                                                type="button"
+                                                                                                className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm flex flex-col"
+                                                                                                onClick={() => {
+                                                                                                    const newWriters = [...(track.writers || [])];
+                                                                                                    newWriters[wIdx] = { ...newWriters[wIdx], name: w.name, legalName: w.legalName || w.name, role: w.role || 'Songwriter' };
+                                                                                                    handleUpdateTrack(track.id, { writers: newWriters });
+                                                                                                }}
+                                                                                            >
+                                                                                                <span className="font-medium">{w.name}</span>
+                                                                                                <span className="text-xs text-[#666]">{w.role}</span>
+                                                                                            </button>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+
+                                                                            {/* Share % */}
+                                                                            <div className="col-span-6 md:col-span-2">
+                                                                                <Input
+                                                                                    label="Share %"
+                                                                                    type="number"
+                                                                                    placeholder="50"
+                                                                                    value={writer.share || ''}
+                                                                                    onChange={e => {
+                                                                                        const newWriters = [...(track.writers || [])];
+                                                                                        newWriters[wIdx] = { ...newWriters[wIdx], share: parseInt(e.target.value) || 0 };
+                                                                                        handleUpdateTrack(track.id, { writers: newWriters });
+                                                                                    }}
+                                                                                />
+                                                                            </div>
+
+                                                                            {/* Actions */}
+                                                                            <div className="col-span-6 md:col-span-2 flex gap-2 mb-5">
+                                                                                <Button
+                                                                                    variant="secondary"
+                                                                                    className="h-[60px] flex-1 px-0"
+                                                                                    title="Save to Library"
+                                                                                    onClick={() => saveWriterToLibrary(writer)}
+                                                                                >
+                                                                                    <Save size={20} />
+                                                                                </Button>
+                                                                                <Button variant="danger" className="h-[60px] flex-1 px-0" onClick={() => {
+                                                                                    const newWriters = (track.writers || []).filter((_: any, i: number) => i !== wIdx);
+                                                                                    handleUpdateTrack(track.id, { writers: newWriters });
+                                                                                }}>
+                                                                                    <Trash2 size={20} />
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+
+                                                                <Button variant="secondary" className="w-full h-12 text-sm border-dashed border-purple-500/30 text-purple-300" onClick={() => {
+                                                                    const newWriter = { id: `writer-${Date.now()}`, name: '', legalName: '', role: 'Songwriter', share: 100 };
+                                                                    handleUpdateTrack(track.id, { writers: [...(track.writers || []), newWriter] });
+                                                                }}>
+                                                                    + Add Songwriter / Composer
+                                                                </Button>
+                                                            </div>
+
+                                                            <div className="mt-8 p-6 bg-indigo-900/10 border border-indigo-500/20 rounded-3xl">
+                                                                <h4 className="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-4">Rights & AI</h4>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <Select
+                                                                        label="Composition"
+                                                                        options={[{ value: 'Original', label: 'Original Composition' }, { value: 'Cover', label: 'Cover Song' }]}
+                                                                        value={track.compositionType}
+                                                                        onChange={e => handleUpdateTrack(track.id, { compositionType: e.target.value as any })}
+                                                                    />
+                                                                    <Select
+                                                                        label="AI Usage"
+                                                                        options={[{ value: 'None', label: 'No AI Used' }, { value: 'Partial', label: 'AI Assisted' }, { value: 'Full', label: 'Fully AI Generated' }]}
+                                                                        value={track.aiUsage}
+                                                                        onChange={e => handleUpdateTrack(track.id, { aiUsage: e.target.value as any })}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="mt-auto pt-8 flex justify-end">
+                                            <Button variant="accent" onClick={validateTracks}>Next: Metadata</Button>
+                                        </div>
+                                    </Card>
                                 </div>
-                            </Card>
+                            )}
                         </div>
                     )}
 
@@ -1865,6 +1963,36 @@ const ReleaseWizard: React.FC = () => {
                                 </Button>
                             </div>
                         </div>
+                    )}
+
+                    {/* Delete Confirmation Modal */}
+                    {trackToDelete && createPortal(
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+                            <div className="bg-[#1A1A1A] border border-white/10 p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl transform scale-100 animate-in fade-in zoom-in duration-200">
+                                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 size={24} className="text-red-500" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Delete Track?</h3>
+                                <p className="text-gray-400 mb-6 text-sm">
+                                    Are you sure you want to delete <span className="text-white font-medium">"{trackToDelete.title}"</span>? This action cannot be undone.
+                                </p>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={cancelDelete}
+                                        className="flex-1 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDelete}
+                                        className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-600/20"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
                     )}
                 </div>
             </div>
