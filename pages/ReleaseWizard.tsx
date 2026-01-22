@@ -31,6 +31,8 @@ const ReleaseWizard: React.FC = () => {
 
     // Upload Progress
     const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+    const [coverUploadProgress, setCoverUploadProgress] = useState<number | null>(null);
+    const [docUploadProgress, setDocUploadProgress] = useState<number | null>(null);
 
     // -- Global Form State --
     const [user, setUser] = useState<any>(null);
@@ -318,12 +320,21 @@ const ReleaseWizard: React.FC = () => {
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
+                    setCoverUploadProgress(0);
                     const base64 = event.target?.result as string;
-                    const result = await apiService.uploadFile(file.name, base64, 'image');
+                    // Use progress upload
+                    const result = await apiService.uploadFileWithProgress(
+                        file.name,
+                        base64,
+                        'image',
+                        (percent) => setCoverUploadProgress(percent)
+                    );
                     setCoverUrl(`http://localhost:3001${result.url}`);
                 } catch (err) {
                     console.error(err);
                     alert('Failed to upload cover art');
+                } finally {
+                    setCoverUploadProgress(null);
                 }
             };
             reader.readAsDataURL(file);
@@ -336,12 +347,21 @@ const ReleaseWizard: React.FC = () => {
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
+                    setDocUploadProgress(0);
                     const base64 = event.target?.result as string;
-                    const result = await apiService.uploadFile(file.name, base64, 'document');
+                    // Use progress upload
+                    const result = await apiService.uploadFileWithProgress(
+                        file.name,
+                        base64,
+                        'document',
+                        (percent) => setDocUploadProgress(percent)
+                    );
                     setDocuments(prev => [...prev, result.url]);
                 } catch (err) {
                     console.error('Failed to upload document:', err);
                     alert('Failed to upload document');
+                } finally {
+                    setDocUploadProgress(null);
                 }
             };
             reader.readAsDataURL(file);
@@ -1382,14 +1402,25 @@ const ReleaseWizard: React.FC = () => {
                                             </div>
                                         ))}
                                         <div className="relative border border-dashed border-[#333] hover:border-[#666] rounded flex flex-col items-center justify-center p-4 transition-colors bg-white/5">
-                                            <UploadCloud className="text-[#666] mb-2" size={20} />
-                                            <span className="text-xs text-[#666]">Upload Document</span>
-                                            <input
-                                                type="file"
-                                                accept=".pdf,.jpg,.png"
-                                                onChange={handleDocumentUpload}
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                            />
+                                            {docUploadProgress !== null ? (
+                                                <div className="w-full px-4 text-center">
+                                                    <span className="text-xs text-[#888] mb-2 block">Uploading...</span>
+                                                    <div className="w-full bg-[#333] h-1.5 rounded-full overflow-hidden">
+                                                        <div className="bg-indigo-500 h-full transition-all duration-300" style={{ width: `${docUploadProgress}%` }} />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <UploadCloud className="text-[#666] mb-2" size={20} />
+                                                    <span className="text-xs text-[#666]">Upload Document</span>
+                                                    <input
+                                                        type="file"
+                                                        accept=".pdf,.jpg,.png"
+                                                        onChange={handleDocumentUpload}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    />
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1413,6 +1444,24 @@ const ReleaseWizard: React.FC = () => {
                                             <button className="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full shadow-lg hover:bg-red-600 transition-colors z-10" onClick={() => setCoverUrl(null)}>
                                                 <Trash2 size={16} />
                                             </button>
+                                        </div>
+                                    ) : coverUploadProgress !== null ? (
+                                        <div className="w-64 text-center">
+                                            <div className="mb-4 relative w-16 h-16 mx-auto">
+                                                <svg className="w-full h-full" viewBox="0 0 100 100">
+                                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#333" strokeWidth="8" />
+                                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#6366f1" strokeWidth="8"
+                                                        strokeDasharray="283"
+                                                        strokeDashoffset={283 - (283 * coverUploadProgress) / 100}
+                                                        transform="rotate(-90 50 50)"
+                                                        className="transition-all duration-200 ease-out"
+                                                    />
+                                                </svg>
+                                                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                                                    {Math.round(coverUploadProgress)}%
+                                                </div>
+                                            </div>
+                                            <p className="text-sm text-white/50">Uploading Artwork...</p>
                                         </div>
                                     ) : (
                                         <label className="cursor-pointer flex flex-col items-center">

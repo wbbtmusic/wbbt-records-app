@@ -22,8 +22,9 @@ const PORT = process.env.PORT || 3001;
 
 // Security Middleware
 app.use(helmet({
-    contentSecurityPolicy: false, // Disabled for dev simplicity, enable in prod if needed
-    crossOriginEmbedderPolicy: false
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false
 }));
 
 // Rate Limiting
@@ -85,7 +86,7 @@ async function generateGeminiContent(parts: any[]) {
 }
 
 
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const UPLOADS_DIR = path.join(process.cwd(), 'server', 'uploads');
 
 // Ensure uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {
