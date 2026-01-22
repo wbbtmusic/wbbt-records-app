@@ -119,10 +119,10 @@ const ReleaseWizard: React.FC = () => {
                         const userUpc = existingRelease.upc && !existingRelease.upc.startsWith('WBBT') ? existingRelease.upc : '';
                         setUpc(userUpc);
                         setOriginalUpc(userUpc);
-                        setCoverUrl(existingRelease.coverUrl ? existingRelease.coverUrl.replace('http://localhost:3001', '') : null);
+                        setCoverUrl(existingRelease.coverUrl ? existingRelease.coverUrl.replace(/^https?:\/\/localhost:\d+/, '') : null);
                         setTracks((existingRelease.tracks || []).map((t: any) => ({
                             ...t,
-                            fileUrl: t.fileUrl ? t.fileUrl.replace('http://localhost:3001', '') : t.fileUrl
+                            fileUrl: t.fileUrl ? t.fileUrl.replace(/^https?:\/\/localhost:\d+/, '') : t.fileUrl
                         })));
                         setSelectedStores(existingRelease.selectedStores || []);
                         setMonetization(existingRelease.monetization || { tikTok: false, youtubeContentId: false, facebookInstagram: false });
