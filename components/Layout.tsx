@@ -189,9 +189,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
               </h1>
             )}
           </div>
-          <div className="flex items-center gap-3 md:gap-6">
-            <Link to="/profile" className="hidden lg:flex items-center gap-4 bg-white/5 pl-5 pr-2 py-2 rounded-full border border-white/5 hover:bg-white/10 transition-colors">
-              <div className="flex flex-col items-end">
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link to="/profile" className="flex items-center gap-3 bg-white/5 pl-4 pr-1.5 py-1.5 rounded-full border border-white/5 hover:bg-white/10 transition-colors">
+              <div className="hidden md:flex flex-col items-end">
                 <span className="text-xs font-bold text-white font-display">{user.artistName}</span>
                 <span className="text-[9px] text-[#666] tracking-wider uppercase">Pro Artist</span>
               </div>
@@ -199,13 +199,16 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
             </Link>
 
             <div className="relative">
-              <button onClick={handleNotifClick} className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#AAA] hover:text-white hover:bg-white/10 transition-colors">
+              <button
+                onClick={handleNotifClick}
+                className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#AAA] hover:text-white hover:bg-white/10 transition-colors"
+              >
                 <Bell size={20} />
                 {hasUnreadNotifs && <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#000]"></div>}
               </button>
 
-              {notifOpen && createPortal(
-                <div className="fixed right-4 top-20 w-80 bg-[#111] border border-[#333] rounded-2xl shadow-2xl p-4 z-[99999] animate-fade-in">
+              {notifOpen && (
+                <div className="absolute right-0 top-12 w-80 bg-[#111] border border-[#333] rounded-2xl shadow-2xl p-4 z-50 animate-fade-in origin-top-right">
                   <h4 className="text-sm font-bold text-white mb-4">Notifications</h4>
                   <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                     {notifications.length === 0 && <p className="text-xs text-[#666] text-center py-4">No notifications</p>}
@@ -222,14 +225,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
                       View All
                     </Link>
                   </div>
-                </div>,
-                document.body
+                </div>
               )}
             </div>
 
             {isDashboard && (
               <Link to="/releases/create">
-                <button className="h-[56px] px-6 md:px-8 rounded-full bg-white text-black hover:bg-[#F2F2F2] text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 shadow-xl shadow-white/5 hover:scale-105 active:scale-95 font-display">
+                <button className="h-[48px] px-6 md:px-6 rounded-full bg-white text-black hover:bg-[#F2F2F2] text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 shadow-xl shadow-white/5 hover:scale-105 active:scale-95 font-display whitespace-nowrap">
                   <Upload size={18} />
                   <span className="hidden sm:inline">New Release</span>
                 </button>

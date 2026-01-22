@@ -431,6 +431,42 @@ export const apiService = {
         return await res.json();
     },
 
+    restoreSystemWithProgress(file: File, onProgress: (percent: number) => void): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${API_BASE}/admin/system/restore`);
+
+            // Set headers
+            xhr.setRequestHeader('Authorization', `Bearer ${getToken()}`);
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    onProgress(percentComplete);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        resolve(result);
+                    } catch (e) {
+                        reject(new Error('Invalid JSON response'));
+                    }
+                } else {
+                    reject(new Error('Restore failed'));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error during restore'));
+
+            const formData = new FormData();
+            formData.append('backup', file);
+            xhr.send(formData);
+        });
+    },
+
     async closeTicket(id: string) {
         const res = await fetch(`${API_BASE}/admin/tickets/${id}/close`, {
             method: 'PUT',

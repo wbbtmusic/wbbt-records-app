@@ -102,6 +102,10 @@ const AdminPanel: React.FC = () => {
     const [userSocialAccounts, setUserSocialAccounts] = useState<any[]>([]);
     const [newAccountForm, setNewAccountForm] = useState({ platform: 'spotify', url: '', name: '' });
 
+    // Backup/Restore State
+    const [backupProgress, setBackupProgress] = useState<number | null>(null);
+    const [restoreProgress, setRestoreProgress] = useState<number | null>(null);
+
     // Derived state
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     useEffect(() => {
@@ -111,6 +115,54 @@ const AdminPanel: React.FC = () => {
     const pendingReleases = releases.filter(r => r.status === 'PENDING');
     const editingReleases = releases.filter(r => r.status === 'EDITING');
 
+    const handleBackup = async () => {
+        try {
+            setBackupProgress(0);
+
+            // Simulate preparation progress
+            const interval = setInterval(() => {
+                setBackupProgress(prev => {
+                    if (prev === null || prev >= 90) return prev;
+                    return prev + 10;
+                });
+            }, 500);
+
+            const zipBlob = await apiService.backupSystem();
+            clearInterval(interval);
+            setBackupProgress(100);
+
+            const url = window.URL.createObjectURL(zipBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wbbt_backup_${new Date().toISOString().slice(0, 10)}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            setTimeout(() => setBackupProgress(null), 1000);
+        } catch (e) {
+            setBackupProgress(null);
+            alert('Backup failed');
+        }
+    };
+
+    const handleRestore = async (file: File) => {
+        if (!confirm('WARNING: This will overwrite the current database and files. The system will restart. Continue?')) return;
+
+        try {
+            setRestoreProgress(0);
+            await apiService.restoreSystemWithProgress(file, (percent) => {
+                setRestoreProgress(Math.round(percent));
+            });
+
+            alert('System restored successfully. Reloading...');
+            window.location.reload();
+        } catch (e: any) {
+            setRestoreProgress(null);
+            alert('Restore failed: ' + e.message);
+        }
+    };
+
     const loadUserSocialAccounts = async (userId: string) => {
         try {
             const res = await apiService.getAdminUserSocialAccounts(userId);
@@ -119,6 +171,7 @@ const AdminPanel: React.FC = () => {
             console.error('Failed to load social accounts', e);
         }
     };
+
 
     const loadUserAnalytics = async (userId: string) => {
         if (!userId) return;
@@ -256,7 +309,6 @@ const AdminPanel: React.FC = () => {
         }
         setActionLoading(false);
     };
-
 
     const loadData = async () => {
         setLoading(true);
@@ -1240,54 +1292,52 @@ const AdminPanel: React.FC = () => {
                             <p className="text-[#666] text-sm">System status and quick statistics</p>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="ghost" className="text-xs border border-[#333] hover:bg-[#222] text-green-400 bg-green-900/10" onClick={async () => {
-                                try {
-                                    const blob = await apiService.backupSystem();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = `wbbt-backup-${new Date().toISOString().slice(0, 10)}.zip`;
-                                    a.click();
-                                } catch (e) {
-                                    alert('Backup failed');
-                                }
-                            }}>
-                                <Download size={14} className="mr-2" /> Backup Data
-                            </Button>
-
-                            <Button className="border border-[#333] hover:bg-[#222] text-white" onClick={() => loadData()}>
-                                <RefreshCw size={14} className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> Refresh
+                            <Button
+                                variant="ghost"
+                                className="h-[40px] px-6 rounded-full bg-[#111] hover:bg-[#222] border border-[#333] text-[#CCC] hover:text-white relative overflow-hidden"
+                                onClick={handleBackup}
+                                disabled={!!backupProgress}
+                            >
+                                {backupProgress !== null ? (
+                                    <>
+                                        <div className="absolute inset-0 bg-white/10" style={{ width: `${backupProgress}%`, transition: 'width 0.5s ease' }} />
+                                        <span className="relative z-10 flex items-center">
+                                            <RefreshCw size={16} className="mr-2 animate-spin" /> {backupProgress < 100 ? 'Preparing...' : 'Downloading...'}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Download size={16} className="mr-2" /> Backup Data
+                                    </>
+                                )}
                             </Button>
 
                             <div className="relative">
                                 <input
                                     type="file"
                                     accept=".zip"
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    onChange={async (e) => {
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    onChange={(e) => {
                                         if (e.target.files?.[0]) {
-                                            if (confirm('WARNING: This will overwrite the current database and files. The system will restart. Continue?')) {
-                                                try {
-                                                    await apiService.restoreSystem(e.target.files[0]);
-                                                    alert('System restored successfully. Reloading...');
-                                                    window.location.reload();
-                                                } catch (e: any) {
-                                                    alert('Restore failed: ' + e.message);
-                                                }
-                                            }
+                                            handleRestore(e.target.files[0]);
                                         }
                                     }}
+                                    disabled={!!restoreProgress}
                                 />
-                                <Button variant="ghost" className="text-xs border border-[#333] hover:bg-[#222] text-blue-400 bg-blue-900/10">
-                                    <Upload size={14} className="mr-2" /> Restore Data
-                                </Button>
-
-                                <Button variant="ghost" className="text-xs border border-[#333] hover:bg-[#222] text-red-500 bg-red-900/10" onClick={handleSystemUpdate}>
-                                    <RefreshCw size={14} className="mr-2" /> System Update
+                                <Button variant="ghost" className="h-[40px] px-6 rounded-full bg-[#111] hover:bg-[#222] border border-[#333] text-blue-400 bg-blue-900/10 hover:bg-blue-900/20">
+                                    <Upload size={16} className="mr-2" /> Restore Data
                                 </Button>
                             </div>
 
-                            <Button variant="ghost" className="text-xs border border-[#333] hover:bg-[#222] text-yellow-400 bg-yellow-900/10" onClick={async () => {
+                            <Button className="h-[40px] px-6 rounded-full bg-white text-black hover:bg-[#DDD] border-none" onClick={() => loadData()}>
+                                <RefreshCw size={16} className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> Refresh
+                            </Button>
+
+                            <Button variant="ghost" className="h-[40px] px-6 rounded-full bg-red-500/10 text-red-500 hover:text-red-400 hover:bg-red-500/20 border border-red-500/20" onClick={handleSystemUpdate} disabled={actionLoading}>
+                                <RefreshCw size={16} className={`mr-2 ${actionLoading ? 'animate-spin' : ''}`} /> System Update
+                            </Button>
+
+                            <Button variant="ghost" className="h-[40px] px-6 rounded-full bg-yellow-500/10 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20" onClick={async () => {
                                 if (confirm('Run database optimization? This helps prevent bloating.')) {
                                     try {
                                         await apiService.optimizeSystem();
@@ -1297,9 +1347,37 @@ const AdminPanel: React.FC = () => {
                                     }
                                 }
                             }}>
-                                <Zap size={14} className="mr-2" /> Optimize System
+                                <Zap size={16} className="mr-2" /> Optimize
                             </Button>
                         </div>
+
+                        {/* Progress Full Screen Overlay for Restore */}
+                        {restoreProgress !== null && createPortal(
+                            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] flex items-center justify-center animate-fade-in">
+                                <div className="bg-[#111] border border-[#333] p-8 rounded-2xl w-full max-w-md text-center shadow-2xl">
+                                    <div className="mb-6 relative w-20 h-20 mx-auto">
+                                        <svg className="w-full h-full" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="45" fill="none" stroke="#222" strokeWidth="8" />
+                                            <circle cx="50" cy="50" r="45" fill="none" stroke="#6366f1" strokeWidth="8"
+                                                strokeDasharray="283"
+                                                strokeDashoffset={283 - (283 * restoreProgress) / 100}
+                                                transform="rotate(-90 50 50)"
+                                                className="transition-all duration-300 ease-out"
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-white">
+                                            {restoreProgress}%
+                                        </div>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Restoring System...</h3>
+                                    <p className="text-[#888] text-sm mb-6">Uploading backup file and restoring database.<br />Please do not close this page.</p>
+                                    <div className="w-full bg-[#222] h-2 rounded-full overflow-hidden">
+                                        <div className="bg-indigo-500 h-full transition-all duration-300" style={{ width: `${restoreProgress}%` }} />
+                                    </div>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
                     </div>
 
                     {/* Stats Grid */}
@@ -1514,7 +1592,8 @@ const AdminPanel: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {
                 loading ? <div className="text-center py-20 text-[#666]">Loading...</div> : (

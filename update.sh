@@ -5,6 +5,13 @@ set -e
 
 echo "🔄 Update işlemi başlatılıyor..."
 
+# 0. Güvenlik Yedeği Al (Veritabanı silinirse geri dönmek için)
+if [ -f "server/wbbt.sqlite" ]; then
+    echo "💾 Veritabanı yedekleniyor..."
+    mkdir -p server/backups
+    cp server/wbbt.sqlite "server/backups/wbbt_$(date +%Y%m%d_%H%M%S).sqlite"
+fi
+
 # 1. En güncel kodu çek
 echo "⬇️  Git changes çekiliyor..."
 git pull origin main
