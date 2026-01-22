@@ -100,7 +100,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
         <div className="h-28 flex items-center justify-center relative px-6">
           {/* Expanded State: Text Logo */}
           <div className={`flex flex-col items-center justify-center transition-all duration-500 ${sidebarOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-90 absolute pointer-events-none'}`}>
-            <h1 className="text-3xl font-black text-white tracking-tighter font-display leading-none">WBBT</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-black text-white tracking-tighter font-display leading-none">WBBT</h1>
+              <span className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Beta</span>
+            </div>
             <span className="text-[10px] tracking-[0.4em] text-indigo-500 uppercase font-bold mt-1">Records</span>
           </div>
 
@@ -141,6 +144,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
 
         {/* Bottom Actions */}
         <div className="p-4 mt-auto">
+          {sidebarOpen && <div className="text-[10px] text-[#444] font-bold text-center mb-4 font-mono tracking-widest opacity-50">v0.9.0-BETA</div>}
           <button
             onClick={handleLogout}
             className={`w-full flex items-center gap-3 px-5 py-4 text-[#666] hover:text-white hover:bg-white/5 rounded-[20px] transition-all duration-300 ${sidebarOpen ? 'justify-start' : 'justify-center'}`}

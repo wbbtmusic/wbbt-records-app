@@ -53,6 +53,10 @@ const AdminPanel: React.FC = () => {
     const [editingSocials, setEditingSocials] = useState(false);
     const [socialForm, setSocialForm] = useState({ spotifyUrl: '', youtubeUrl: '' });
 
+    // Download Progress
+    const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+    const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
+
     // URL Normalization Helpers
     const normalizeSpotifyUrl = (url: string): string => {
         if (!url) return '';
@@ -560,20 +564,52 @@ const AdminPanel: React.FC = () => {
 
     const handleDownloadAudio = async (fileUrl: string, filename: string) => {
         try {
+            setDownloadingFile(filename);
+            setDownloadProgress(0);
+
             const fullUrl = fileUrl.startsWith('http') ? fileUrl : fileUrl;
-            const response = await fetch(fullUrl);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const blob = await response.blob();
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(link.href);
+
+            // Use XHR for progress
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', fullUrl, true);
+            xhr.responseType = 'blob';
+
+            xhr.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    setDownloadProgress(Math.round(percentComplete));
+                }
+            });
+
+            xhr.onload = () => {
+                setDownloadingFile(null);
+                setDownloadProgress(null);
+                if (xhr.status === 200) {
+                    const blob = xhr.response;
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(link.href);
+                } else {
+                    alert('Download failed.');
+                }
+            };
+
+            xhr.onerror = () => {
+                setDownloadingFile(null);
+                setDownloadProgress(null);
+                alert('Download failed.');
+            };
+
+            xhr.send();
         } catch (error) {
+            setDownloadingFile(null);
+            setDownloadProgress(null);
             console.error('Download failed:', error);
-            alert('Download failed. The file may not exist.');
+            alert('Download failed.');
         }
     };
 
@@ -1175,8 +1211,12 @@ const AdminPanel: React.FC = () => {
                                                             <Edit3 size={12} className="mr-1" /> Edit
                                                         </Button>
                                                     )}
-                                                    <Button variant="ghost" className="h-8 text-xs text-[#666] hover:text-white" onClick={() => handleDownloadAudio(t.fileUrl, `${(currentRelease as any).artistName} - ${t.title}.mp3`)}>
-                                                        <Download size={14} className="mr-1" /> Audio
+                                                    <Button variant="ghost" className="h-8 text-xs text-[#666] hover:text-white min-w-[70px]" onClick={() => handleDownloadAudio(t.fileUrl, `${(currentRelease as any).artistName} - ${t.title}.mp3`)} disabled={downloadingFile === `${(currentRelease as any).artistName} - ${t.title}.mp3`}>
+                                                        {downloadingFile === `${(currentRelease as any).artistName} - ${t.title}.mp3` && downloadProgress !== null ? (
+                                                            <span className="text-indigo-400 font-mono font-bold text-[10px]">{downloadProgress}%</span>
+                                                        ) : (
+                                                            <><Download size={14} className="mr-1" /> Audio</>
+                                                        )}
                                                     </Button>
                                                 </div>
                                             </div>
