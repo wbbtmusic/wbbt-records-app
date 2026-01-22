@@ -202,7 +202,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
               <Avatar src={user.profilePicture} alt={user.firstName} size="md" />
             </Link>
 
-            <div className="relative">
+            <div className="relative z-[100]">
               <button
                 onClick={handleNotifClick}
                 className="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#AAA] hover:text-white hover:bg-white/10 transition-colors"
@@ -212,7 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
               </button>
 
               {notifOpen && (
-                <div className="absolute right-0 top-12 w-80 bg-[#111] border border-[#333] rounded-2xl shadow-2xl p-4 z-50 animate-fade-in origin-top-right">
+                <div className="absolute right-0 top-12 w-80 bg-[#111] border border-[#333] rounded-2xl shadow-2xl p-4 z-50 animate-slide-down origin-top-right">
                   <h4 className="text-sm font-bold text-white mb-4">Notifications</h4>
                   <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                     {notifications.length === 0 && <p className="text-xs text-[#666] text-center py-4">No notifications</p>}
