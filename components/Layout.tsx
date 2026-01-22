@@ -165,7 +165,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
         `}
       >
         {/* FLOATING HEADER - Only detailed on Dashboard */}
-        <header className="mt-4 h-[88px] glass-panel rounded-[40px] flex items-center justify-between px-4 md:px-8 mb-6 transition-all duration-500 ease-wise-ease shrink-0">
+        <header className="mt-4 h-[88px] glass-panel rounded-[40px] flex items-center justify-between px-4 md:px-8 mb-6 transition-all duration-500 ease-wise-ease shrink-0 relative z-50">
           <div className="flex items-center gap-3 md:gap-6">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
