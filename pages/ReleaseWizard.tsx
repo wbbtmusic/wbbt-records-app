@@ -329,7 +329,7 @@ const ReleaseWizard: React.FC = () => {
                         'image',
                         (percent) => setCoverUploadProgress(percent)
                     );
-                    setCoverUrl(`http://localhost:3001${result.url}`);
+                    setCoverUrl(result.url);
                 } catch (err) {
                     console.error(err);
                     alert('Failed to upload cover art');
@@ -613,7 +613,7 @@ const ReleaseWizard: React.FC = () => {
             if (audioRef.current) {
                 audioRef.current.pause();
             }
-            const url = track.fileUrl.startsWith('http') ? track.fileUrl : `http://localhost:3001${track.fileUrl}`;
+            const url = track.fileUrl.startsWith('http') ? track.fileUrl : track.fileUrl;
             audioRef.current = new Audio(url);
             audioRef.current.play().catch(e => console.error("Play error:", e));
             audioRef.current.onended = () => setPlayingTrackId(null);

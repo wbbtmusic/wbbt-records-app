@@ -560,7 +560,7 @@ const AdminPanel: React.FC = () => {
 
     const handleDownloadAudio = async (fileUrl: string, filename: string) => {
         try {
-            const fullUrl = fileUrl.startsWith('http') ? fileUrl : `http://localhost:3001${fileUrl}`;
+            const fullUrl = fileUrl.startsWith('http') ? fileUrl : fileUrl;
             const response = await fetch(fullUrl);
             if (!response.ok) throw new Error('Network response was not ok');
             const blob = await response.blob();
@@ -851,7 +851,7 @@ const AdminPanel: React.FC = () => {
                                                 ? JSON.parse((currentRelease as any).documents)
                                                 : (currentRelease as any).documents
                                             ).map((doc: string, i: number) => (
-                                                <a key={i} href={doc.startsWith('http') ? doc : `http://localhost:3001${doc}`} target="_blank" className="flex items-center gap-4 bg-[#1A1A1A] border border-[#333] px-4 py-3 rounded-xl text-sm text-indigo-300 hover:bg-[#222] hover:text-white transition-colors group">
+                                                <a key={i} href={doc.startsWith('http') ? doc : doc} target="_blank" className="flex items-center gap-4 bg-[#1A1A1A] border border-[#333] px-4 py-3 rounded-xl text-sm text-indigo-300 hover:bg-[#222] hover:text-white transition-colors group">
                                                     <div className="bg-indigo-500/10 p-2 rounded-lg text-indigo-400 group-hover:text-white transition-colors">
                                                         <FileText size={18} />
                                                     </div>
@@ -2331,7 +2331,7 @@ const AdminPanel: React.FC = () => {
                                                             <p className="text-[10px] text-[#666] uppercase font-bold mb-2">Attachments</p>
                                                             <div className="flex flex-wrap gap-2">
                                                                 {JSON.parse(selectedTicket.attachments).map((att: any, idx: number) => (
-                                                                    <a key={idx} href={att.url.startsWith('http') ? att.url : `http://localhost:3001${att.url}`} target="_blank" className="flex items-center gap-2 bg-[#1A1A1A] border border-[#333] px-3 py-2 rounded text-xs text-indigo-300 hover:bg-[#222] hover:text-white transition-colors">
+                                                                    <a key={idx} href={att.url.startsWith('http') ? att.url : att.url} target="_blank" className="flex items-center gap-2 bg-[#1A1A1A] border border-[#333] px-3 py-2 rounded text-xs text-indigo-300 hover:bg-[#222] hover:text-white transition-colors">
                                                                         <Disc size={12} /> {att.name}
                                                                     </a>
                                                                 ))}

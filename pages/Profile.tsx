@@ -74,7 +74,7 @@ const Profile: React.FC = () => {
                 const base64 = event.target?.result as string;
                 // Upload
                 const result = await apiService.uploadFile(file.name, base64, 'image');
-                const fullUrl = `http://localhost:3001${result.url}`;
+                const fullUrl = result.url;
 
                 // Update Profile immediately
                 await apiService.updateProfile({ profilePicture: fullUrl });
