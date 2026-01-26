@@ -6,7 +6,7 @@ import { User, UserRole } from '../types';
 import { apiService } from '../services/apiService';
 import {
   LayoutDashboard, Disc, DollarSign, Upload, Shield,
-  LogOut, Menu, User as UserIcon, AudioLines, Library, BarChart2, LifeBuoy, BrainCircuit, X, Users, FileSignature, Bell, TrendingUp
+  LogOut, Menu, User as UserIcon, AudioLines, Library, BarChart2, LifeBuoy, BrainCircuit, X, Users, FileSignature, Bell, TrendingUp, ChevronDown
 } from 'lucide-react';
 import NeuralBackground from './NeuralBackground';
 import Avatar from './Avatar';
@@ -24,6 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
   const [unreadSupport, setUnreadSupport] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const hasUnreadNotifs = notifications.some(n => !n.read);
 
   useEffect(() => {
@@ -129,7 +130,52 @@ const Layout: React.FC<LayoutProps> = ({ children, user, setUser }) => {
           <div className="my-3 border-t border-white/5 mx-4" />
           <p className={`px-4 text-[10px] text-[#444] font-bold uppercase mb-2 tracking-widest font-display transition-all duration-300 ${!sidebarOpen && 'opacity-0 h-0 mb-0'}`}>Studio & Tools</p>
           <NavItem to="/ai-studio" icon={BrainCircuit} label="AI Studio" />
-          <NavItem to="/tools" icon={AudioLines} label="Tools" />
+
+          {/* Tools Dropdown */}
+          <div
+            className="relative group/tools"
+            onMouseEnter={() => setToolsOpen(true)}
+            onMouseLeave={() => setToolsOpen(false)}
+          >
+            <div
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className={`flex items-center gap-4 px-5 py-3.5 mb-2 rounded-[20px] transition-all duration-500 ease-wise-ease group relative overflow-hidden cursor-pointer ${location.pathname.startsWith('/tools')
+                ? 'bg-white text-black shadow-xl shadow-white/10 scale-[1.02]'
+                : 'text-[#888] hover:bg-white/5 hover:text-white hover:scale-[1.01]'
+                }`}
+            >
+              <div className="relative">
+                <AudioLines size={20} className={`relative z-10 transition-colors duration-300 ${location.pathname.startsWith('/tools') ? "text-indigo-600" : "text-[#666] group-hover:text-white"}`} />
+              </div>
+              <span className={`relative z-10 text-sm font-bold tracking-wide font-display whitespace-nowrap transition-all duration-500 ${sidebarOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-[-10px] absolute left-14'}`}>
+                Tools
+              </span>
+              {sidebarOpen && (
+                <ChevronDown size={16} className={`ml-auto transition-transform duration-300 ${toolsOpen ? 'rotate-180' : 'rotate-0'}`} />
+              )}
+            </div>
+
+            {/* Submenu */}
+            <div
+              className={`
+                transition-all duration-300 ease-in-out overflow-hidden
+                ${sidebarOpen
+                  ? `${toolsOpen ? 'max-h-40 opacity-100 mb-2' : 'max-h-0 opacity-0 mb-0'}`
+                  : `absolute left-full top-0 ml-2 w-48 bg-[#111] border border-[#333] rounded-2xl p-2 shadow-xl z-50 ${toolsOpen ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-[-10px] pointer-events-none'}`
+                }
+              `}
+            >
+              <Link to="/tools/spotify-claim" className={`block px-4 py-2 text-xs font-bold rounded-xl transition-colors ${sidebarOpen ? 'ml-12 hover:bg-white/5 text-[#888] hover:text-white' : 'hover:bg-white/10 text-[#AAA] hover:text-white'}`}>
+                Spotify Claim
+              </Link>
+              <Link to="/tools/youtube-claim" className={`block px-4 py-2 text-xs font-bold rounded-xl transition-colors ${sidebarOpen ? 'ml-12 hover:bg-white/5 text-[#888] hover:text-white' : 'hover:bg-white/10 text-[#AAA] hover:text-white'}`}>
+                YouTube Claim
+              </Link>
+              <Link to="/tools/release-preview" className={`block px-4 py-2 text-xs font-bold rounded-xl transition-colors ${sidebarOpen ? 'ml-12 hover:bg-white/5 text-[#888] hover:text-white' : 'hover:bg-white/10 text-[#AAA] hover:text-white'}`}>
+                Release Preview
+              </Link>
+            </div>
+          </div>
 
           <div className="my-3 border-t border-white/5 mx-4" />
           <NavItem to="/support" icon={LifeBuoy} label="Support" alert={unreadSupport} />

@@ -20,6 +20,9 @@ import FAQ from './pages/FAQ';
 import AIStudio from './pages/AIStudio';
 import Promotion from './pages/Promotion';
 import BannedView from './pages/BannedView';
+import ReleasePreview from './pages/ReleasePreview';
+import SpotifyClaim from './pages/SpotifyClaim';
+import YoutubeClaim from './pages/YoutubeClaim';
 import { User, UserRole, ApplicationStatus } from './types';
 import { apiService } from './services/apiService';
 
@@ -80,6 +83,9 @@ const App: React.FC = () => {
         <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
         <Route path="/promotion" element={<ProtectedRoute><Promotion /></ProtectedRoute>} />
         <Route path="/ai-studio" element={<ProtectedRoute><AIStudio /></ProtectedRoute>} />
+        <Route path="/tools/release-preview" element={<ProtectedRoute><ReleasePreview /></ProtectedRoute>} />
+        <Route path="/tools/spotify-claim" element={<ProtectedRoute><SpotifyClaim /></ProtectedRoute>} />
+        <Route path="/tools/youtube-claim" element={<ProtectedRoute><YoutubeClaim /></ProtectedRoute>} />
 
         <Route path="/admin" element={user && user.role === UserRole.ADMIN ? <Layout user={user} setUser={setUser}><AdminPanel /></Layout> : <Navigate to="/dashboard" />} />
       </Routes>
