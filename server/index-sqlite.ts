@@ -19,7 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.set('trust proxy', true); // Trust Caddy/Nginx proxy (all headers)
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3030;
 
 // Security Middleware
 app.use(helmet({

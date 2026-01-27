@@ -7,7 +7,7 @@ module.exports = {
             interpreter_args: '--import tsx', // Use tsx loader for TS files
             env: {
                 NODE_ENV: 'production',
-                PORT: 3001
+                PORT: 3030
             }
         }
     ]
