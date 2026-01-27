@@ -1,6 +1,7 @@
 # 🎵 WBBT Records - Music Distribution Platform
 
 A modern, full-featured music distribution platform built with **React, Vite, Node.js (Express), and SQLite**.
+The entire system runs on a **single port (3030)** for easy deployment.
 
 ![Admin Panel](https://placehold.co/600x400?text=WBBT+Records)
 
@@ -12,45 +13,107 @@ A modern, full-featured music distribution platform built with **React, Vite, No
 - **Team Management**: Split royalties with collaborators.
 - **Auto-Seeding**: Automatic Admin account creation.
 
-## 🚀 Tech Stack
-- **Frontend**: React 19, TailwindCSS, Lucide Icons, Recharts.
-- **Backend**: Node.js, Express, Better-SQLite3.
-- **Security**: Helmet, Rate Limiting, BCrypt.
-- **Deployment**: PM2, Docker (Optional), Cloudflare Tunnel ready.
+---
 
-## 🛠️ Installation (Local)
+## 🚀 Server Installation Guide (Ubuntu 20.04/22.04)
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/wbbtmusic/wbbt-records-app.git
-   cd wbbt-records-app
-   ```
+Follow these steps to deploy the application from scratch on a fresh server.
 
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+### 1️⃣ Prerequisites
+Connect to your server via SSH and install the required tools:
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
 
-3. **Setup Environment**
-   Duplicate `.env.example` to `.env.local` and fill in keys.
+# Install Node.js 20, Git, and Caddy
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs git debian-keyring debian-archive-keyring apt-transport-https
 
-4. **Run Development Server**
-   ```bash
-   npm start
-   ```
-   - Frontend: `http://localhost:5173`
-   - Backend: `http://localhost:3001`
+# Install Caddy (Web Server & Auto SSL)
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update && sudo apt install caddy
 
-## 🌍 Deployment
+# Install Global Tools (PM2 & TSX)
+sudo npm install -g pm2 tsx
+```
 
-### Option 1: Coolify (Recommended)
-1. Add new resource -> Public Repository.
-2. Paste repo URL.
-3. Build Pack: **Nixpacks**.
-4. Port: **3001**.
-5. Enable **Autodeploy**.
+### 2️⃣ Clone & Install
+Download the source code and install dependencies:
+```bash
+# Clone the repository
+git clone https://github.com/wbbtmusic/wbbt-records-app.git wbbt
+cd wbbt
 
-### Option 2: Linux + PM2
-See [deployment.md](./deployment.md) for detailed instructions.
+# Install packages
+npm install
+
+# Build the frontend
+npm run build
+```
+
+### 3️⃣ Configuration
+Create the environment file (`.env.local`) and configure settings.
+```bash
+nano .env.local
+```
+Paste your configuration (ensure `PORT=3030`):
+```env
+PORT=3030
+JWT_SECRET=your-secure-secret-key-here
+GEMINI_API_KEY=your-google-gemini-key
+SPOTIFY_CLIENT_ID=your-id
+SPOTIFY_CLIENT_SECRET=your-secret
+```
+*Save: `CTRL+X`, `Y`, `Enter`*
+
+### 4️⃣ Start Application (PM2)
+Start the server in the background:
+```bash
+pm2 start ecosystem.config.cjs --env production
+pm2 save
+pm2 startup
+```
+*Current status: The app is running on `http://localhost:3030`.*
 
 ---
+
+## 🌐 Domain Setup (Caddy Reverse Proxy)
+We use **Caddy** because it's easier than Nginx and handles SSL automatically.
+
+### 1. Configure Caddy
+Open the Caddyfile:
+```bash
+sudo nano /etc/caddy/Caddyfile
+```
+
+### 2. Add Your Domain
+Delete everything and paste this (replace `app.wbbt.net` with your domain):
+```caddy
+app.wbbt.net {
+    reverse_proxy localhost:3030
+}
+```
+*Save: `CTRL+X`, `Y`, `Enter`*
+
+### 3. Restart Caddy
+```bash
+sudo systemctl restart caddy
+```
+
+**✅ DONE!**
+Go to `https://app.wbbt.net` in your browser. SSL is automatic.
+
+---
+
+## 🔄 How to Update?
+To update your server with the latest code from GitHub:
+```bash
+cd ~/wbbt
+./update.sh
+```
+Based on the `update.sh` script, this will:
+1. `git pull` latest code.
+2. `npm install` new dependencies.
+3. `npm run build` frontend.
+4. `pm2 restart` the server.
