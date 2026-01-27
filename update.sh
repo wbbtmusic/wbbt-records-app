@@ -27,6 +27,6 @@ npm run build
 # 4. Sunucuyu Yeniden Başlat
 echo "🚀 PM2 servisi yeniden başlatılıyor..."
 # Reload çalışmazsa restart dene
-pm2 reload ecosystem.config.cjs --env production || pm2 restart ecosystem.config.cjs --env production
+pm2 reload ecosystem.config.cjs --env production --update-env || pm2 restart ecosystem.config.cjs --env production --update-env
 
 echo "✅ Güncelleme başarıyla tamamlandı!"
