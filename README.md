@@ -137,7 +137,19 @@ npx tsx server/index-sqlite.ts
 - If it says **"JWT_SECRET must be set..."** -> You forgot to create `.env.local`.
 - If it says **"Address already in use"** -> Port is occupied (see below).
 
-### 2. `EADDRINUSE: address already in use`
+### 2. "The site stopped when I ran `Ctrl+C`"
+If you started the server with `npx tsx ...` or `npm run start`, it runs in the foreground. Closing the terminal or pressing `Ctrl+C` kills it.
+**Solution: Use PM2 (Process Manager)**
+PM2 keeps the app running in the background forever.
+```bash
+# Start properly with PM2
+pm2 start ecosystem.config.cjs --env production
+
+# Save process list so it survives reboots
+pm2 save
+```
+
+### 3. `EADDRINUSE: address already in use`
 This means another process is using port 3030 (often an old zombie process).
 **Fix:**
 ```bash
@@ -148,7 +160,7 @@ killall node
 pm2 restart all
 ```
 
-### 3. PM2 Process is `online` but site is down
+### 4. PM2 Process is `online` but site is down
 This is a **Crash Loop**. The app starts and crashes immediately, so PM2 shows "online" for a split second.
 **Diagnose:**
 ```bash
@@ -156,7 +168,7 @@ pm2 logs --lines 50
 ```
 Look for errors like "SqliteError", "Missing env var", etc.
 
-### 4. `Permission denied` for ./update.sh
+### 5. `Permission denied` for ./update.sh
 You need to make the script executable:
 ```bash
 chmod +x update.sh
