@@ -117,3 +117,47 @@ Based on the `update.sh` script, this will:
 2. `npm install` new dependencies.
 3. `npm run build` frontend.
 4. `pm2 restart` the server.
+
+---
+
+## 🛠️ Troubleshooting
+
+Common issues and how to fix them.
+
+### 1. `Connection refused` (Port 3030 is closed)
+If you cannot access the site via IP, the server process might be down.
+Check status manually to see the error:
+```bash
+# Stop PM2 temporarily
+pm2 stop all
+
+# Run server manually to see errors
+npx tsx server/index-sqlite.ts
+```
+- If it says **"JWT_SECRET must be set..."** -> You forgot to create `.env.local`.
+- If it says **"Address already in use"** -> Port is occupied (see below).
+
+### 2. `EADDRINUSE: address already in use`
+This means another process is using port 3030 (often an old zombie process).
+**Fix:**
+```bash
+# Kill all Node processes
+killall node
+
+# Restart PM2
+pm2 restart all
+```
+
+### 3. PM2 Process is `online` but site is down
+This is a **Crash Loop**. The app starts and crashes immediately, so PM2 shows "online" for a split second.
+**Diagnose:**
+```bash
+pm2 logs --lines 50
+```
+Look for errors like "SqliteError", "Missing env var", etc.
+
+### 4. `Permission denied` for ./update.sh
+You need to make the script executable:
+```bash
+chmod +x update.sh
+```
