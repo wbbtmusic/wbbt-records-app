@@ -6,10 +6,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     server: {
-      port: Number(process.env.VITE_PORT) || 3000,
+      port: Number(process.env.VITE_PORT) || 5173,
       host: '0.0.0.0',
       proxy: {
         '/api': {
+          target: 'http://localhost:3030',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/uploads': {
           target: 'http://localhost:3030',
           changeOrigin: true,
           secure: false,

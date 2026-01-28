@@ -139,6 +139,18 @@ app.use((req, res, next) => {
 // Serve static files
 app.use('/uploads', express.static(UPLOADS_DIR));
 
+// Serve frontend in production
+if (process.env.NODE_ENV === 'production') {
+    const DIST_DIR = path.resolve(__dirname, '../dist');
+    app.use(express.static(DIST_DIR));
+
+    // Handle SPA routing - send index.html for all non-API routes
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api')) return next();
+        res.sendFile(path.join(DIST_DIR, 'index.html'));
+    });
+}
+
 // Security: Rate Limiting for Auth
 const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
 const RATE_LIMIT = { maxAttempts: 50, windowMs: 15 * 60 * 1000 }; // 50 attempts per 15 min

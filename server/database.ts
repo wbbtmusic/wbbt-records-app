@@ -1522,6 +1522,13 @@ VALUES(?, ?, ?, ?, ?)
         return db.prepare('DELETE FROM daily_api_cache WHERE cache_date < ?').run(dateStr);
     },
 
+    // Copyright Checks
+    createCopyrightCheck: (check: { id: string, trackId: string, status: string, matchData: string }) => {
+        return db.prepare('INSERT INTO copyright_checks (id, track_id, status, match_data) VALUES (?, ?, ?, ?)').run(
+            check.id, check.trackId, check.status, check.matchData
+        );
+    },
+
     // System Logs
     createLog: (log: { level: 'INFO' | 'WARN' | 'ERROR' | 'SUCCESS', message: string, details?: string, userId?: string }) => {
         const id = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

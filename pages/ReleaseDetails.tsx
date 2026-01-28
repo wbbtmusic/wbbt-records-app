@@ -59,7 +59,7 @@ const ReleaseDetails: React.FC = () => {
 
     const getCopyrightBadge = (trackId: string) => {
         const status = copyrights[trackId]?.status;
-        if (!status) return null; // No check yet
+        if (!status) return <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-gray-500/10 text-gray-500">Not Scanned</span>;
 
         if (status === 'MATCH') {
             const match = copyrights[trackId].match_data ? JSON.parse(copyrights[trackId].match_data).matches[0] : {};

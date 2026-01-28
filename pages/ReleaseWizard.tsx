@@ -844,6 +844,15 @@ const ReleaseWizard: React.FC = () => {
                                             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                                                 <UploadCloud size={32} className="text-white/60 group-hover:text-white" />
                                             </div>
+                                            <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl flex items-start gap-3 mb-6 mx-auto max-w-2xl text-left">
+                                                <Copyright className="text-blue-400 mt-1 flex-shrink-0" size={18} />
+                                                <div>
+                                                    <h4 className="text-blue-400 font-bold text-sm">Automated Copyright Check</h4>
+                                                    <p className="text-blue-300/70 text-xs mt-1">
+                                                        Files will be analyzed by ACRCloud after submission. Please ensure you own 100% of the rights.
+                                                    </p>
+                                                </div>
+                                            </div>
                                             <h3 className="text-3xl font-display font-bold text-white mb-3">Drop files here</h3>
                                             <p className="text-white/50 text-sm mb-8">WAV, FLAC, AIFF, MP3 supported. Click to browse.</p>
                                             <span className="inline-block bg-white/10 hover:bg-white/20 text-white px-10 py-3 rounded-full text-sm font-medium transition-colors">Browse Files</span>
