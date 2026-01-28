@@ -23,6 +23,8 @@ import BannedView from './pages/BannedView';
 import ReleasePreview from './pages/ReleasePreview';
 import SpotifyClaim from './pages/SpotifyClaim';
 import YoutubeClaim from './pages/YoutubeClaim';
+import TermsOfUse from './pages/TermsOfUse';
+import PublisherAgreement from './pages/PublisherAgreement';
 import { User, UserRole, ApplicationStatus } from './types';
 import { apiService } from './services/apiService';
 
@@ -63,6 +65,8 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Landing setUser={setUser} />} />
+        <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/agreement" element={<PublisherAgreement />} />
 
         <Route path="/apply" element={user ? (isApproved(user) ? <Navigate to="/dashboard" /> : <ApplicationFlow user={user} setUser={setUser} />) : <Navigate to="/" />} />
 

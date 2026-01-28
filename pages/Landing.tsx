@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { User } from '../types';
 import BackgroundSlideshow from '../components/BackgroundSlideshow';
@@ -21,6 +21,7 @@ const Landing: React.FC<LandingProps> = ({ setUser }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [artistName, setArtistName] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -44,7 +45,11 @@ const Landing: React.FC<LandingProps> = ({ setUser }) => {
 
         if (!isStrong) throw new Error('Password is too weak. Please meet all requirements.');
 
+        if (!isStrong) throw new Error('Password is too weak. Please meet all requirements.');
+
         if (!firstName || !lastName || !artistName || !email) throw new Error('Please fill in all fields');
+        if (!termsAccepted) throw new Error('Please accept the Terms of Use and Publisher Agreement to proceed.');
+
         user = await apiService.signup(email, password, firstName, lastName, artistName);
       }
       setUser(user);
@@ -237,9 +242,24 @@ const Landing: React.FC<LandingProps> = ({ setUser }) => {
                   </div>
                 )}
 
+                {!isLogin && (
+                  <div className="flex items-start gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-1 w-4 h-4 rounded border-[#333] bg-[#1A1A1A] text-indigo-500 focus:ring-indigo-500/50"
+                    />
+                    <label htmlFor="terms" className="text-xs text-[#888] cursor-pointer select-none leading-relaxed">
+                      By registering, I agree to the <Link to="/terms" target="_blank" className="text-indigo-400 hover:text-white transition-colors">Terms of Use</Link> and <Link to="/agreement" target="_blank" className="text-indigo-400 hover:text-white transition-colors">Publisher Agreement</Link>, and I consent to the use of my email for marketing purposes by WBBT Records and its affiliates.
+                    </label>
+                  </div>
+                )}
+
                 {error && <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-2xl text-red-500 text-xs text-center">{error}</div>}
 
-                <Button type="submit" variant="accent" className="w-full py-4 text-base mt-4 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300 transform hover:scale-[1.02]">
+                <Button type="submit" variant="accent" className="w-full py-4 text-base mt-2 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300 transform hover:scale-[1.02]">
                   {loading ? 'Processing...' : (isLogin ? 'Log In' : 'Create Account')}
                 </Button>
               </form>
