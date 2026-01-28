@@ -16,13 +16,13 @@ const PublisherAgreement: React.FC = () => {
 
                 <article className="prose prose-invert prose-lg max-w-none">
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 font-display">Publisher Agreement</h1>
-                    <p className="text-xl text-[#8E8EA0] mb-8 font-light">Digital Distribution Agreement</p>
+                    <p className="text-xl text-[#8E8EA0] mb-8 font-light">Label & Licensing Agreement</p>
 
                     <div className="space-y-8 text-[#CCC] leading-relaxed">
                         <section>
                             <h2 className="text-2xl font-bold text-white mb-4">1. Grant of Rights</h2>
                             <p>
-                                By uploading your Releases to WBBT Records, you grant us the non-exclusive, worldwide right to distribute, sell, copy, and display your Recordings and Artwork via Digital Service Providers (DSPs) such as Spotify, Apple Music, and others. You retain all ownership rights to your Master Recordings and Compositions.
+                                By signing this agreement with WBBT Records (the "Label"), you grant the Label exclusive rights to distribute, license, and monetize your Recordings and Artwork via Digital Service Providers (DSPs). You retain ownership of your underlying copyrights, licensing them to the Label for the term of this agreement.
                             </p>
                         </section>
 
@@ -30,7 +30,7 @@ const PublisherAgreement: React.FC = () => {
                             <h2 className="text-2xl font-bold text-white mb-4">2. Royalties & Payouts</h2>
                             <ul className="list-disc pl-5 space-y-2">
                                 <li>
-                                    <strong>Net Receipts:</strong> We will pay you 100% of the Net Receipts actually received by us from DSPs for your Recordings, less any applicable taxes or third-party fees, unless a different split is agreed upon in your account settings.
+                                    <strong>Net Receipts:</strong> We will pay you 70% of the Net Receipts actually received by us from DSPs for your Recordings. WBBT Records retains 30% as a label commission.
                                 </li>
                                 <li>
                                     <strong>Payment Timing:</strong> Royalties are reported and paid monthly, subject to a minimum withdrawal threshold (e.g., $50). Reporting usually occurs 45-60 days after the end of the month in which streams occurred.
@@ -60,7 +60,7 @@ const PublisherAgreement: React.FC = () => {
                         <section>
                             <h2 className="text-2xl font-bold text-white mb-4">5. Marketing Consent</h2>
                             <p>
-                                You agree that WBBT Records may use your Name, Likeness, and Artwork for promotional purposes related to the Platform and your Releases. You also consent to receiving marketing communications from us regarding new features, opportunities, and industry news.
+                                You agree that WBBT Records may use your Name, Likeness, and Artwork for promotional purposes related to the Label and your Releases. You also consent to receiving marketing communications from us regarding new features, opportunities, and industry news.
                             </p>
                         </section>
 

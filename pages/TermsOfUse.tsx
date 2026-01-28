@@ -29,7 +29,7 @@ const TermsOfUse: React.FC = () => {
                         <section>
                             <h2 className="text-2xl font-bold text-white mb-4">2. Services Provided</h2>
                             <p>
-                                WBBT Records provides digital music distribution services, allowing artists and labels to upload, manage, and distribute their musical recordings to various digital service providers (DSPs) such as Spotify, Apple Music, and others.
+                                WBBT Records functions as a digital record label, allowing artists to release, manage, and distribute their musical recordings to various digital service providers (DSPs) such as Spotify, Apple Music, and others under our label.
                             </p>
                         </section>
 

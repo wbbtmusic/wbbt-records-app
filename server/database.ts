@@ -124,8 +124,22 @@ const initSchema = () => {
       ai_usage TEXT,
       composition_type TEXT,
       track_number INTEGER,
+      genre TEXT,
+      sub_genre TEXT,
+      is_instrumental INTEGER DEFAULT 0,
+      copyright_type TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (release_id) REFERENCES releases(id) ON DELETE CASCADE
+    );
+
+    -- Copyright Checks table
+    CREATE TABLE IF NOT EXISTS copyright_checks (
+      id TEXT PRIMARY KEY,
+      track_id TEXT NOT NULL,
+      status TEXT,
+      match_data TEXT, -- JSON
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE
     );
 
     -- Track Artists table

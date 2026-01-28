@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { sqlite } from './database.js';
 import { externalAnalyticsService } from './services/externalAnalytics.js';
+import { acrCloudService } from './services/acrCloud.js';
 import { exec } from 'child_process';
 import dotenv from 'dotenv';
 
@@ -1013,6 +1014,63 @@ app.post('/api/upload', authMiddleware, (req: any, res) => {
     } catch (e) {
         console.error('File upload error:', e);
         res.status(500).json({ error: 'Failed to save file' });
+    }
+});
+
+app.post('/api/releases', authMiddleware, async (req: any, res) => {
+    try {
+        const releaseData = req.body;
+        const newRelease = {
+            ...releaseData,
+            id: `rel-${Date.now()}`,
+            userId: req.userId,
+            status: 'PENDING',
+            tracks: releaseData.tracks.map((t: any) => ({
+                ...t,
+                id: t.id || `trk-${Date.now()}-${Math.random()}`,
+                releaseId: `rel-${Date.now()}` // Will be fixed by createRelease
+            }))
+        };
+
+        sqlite.createRelease(newRelease);
+
+        // Background Job: Analyze Tracks with ACRCloud
+        // We do this AFTER response to keep UI fast
+        (async () => {
+            console.log(`[ACRCloud] Starting analysis for release ${newRelease.id}`);
+            for (const track of newRelease.tracks) {
+                if (!track.fileUrl) continue;
+
+                // File URL on server is usually like http://localhost:3030/uploads/file.mp3
+                // We need absolute path.
+                // Assuming fileUrl format: .../uploads/filename.mp3
+                const filename = path.basename(track.fileUrl);
+                const filePath = path.join(UPLOADS_DIR, filename);
+
+                if (fs.existsSync(filePath)) {
+                    // Create Pending Record
+                    const checkId = `cpy-${Date.now()}-${Math.random()}`;
+                    sqlite.run('INSERT INTO copyright_checks (id, track_id, status) VALUES (?, ?, ?)', [checkId, track.id, 'PENDING']);
+
+                    // Analyze
+                    const result = await acrCloudService.identify(filePath);
+
+                    if (result.success && result.data) {
+                        sqlite.run('UPDATE copyright_checks SET status = ?, match_data = ? WHERE id = ?',
+                            [result.data.status, JSON.stringify(result.data), checkId]);
+                        console.log(`[ACRCloud] Track ${track.id}: ${result.data.status}`);
+                    } else {
+                        sqlite.run('UPDATE copyright_checks SET status = ? WHERE id = ?', ['ERROR', checkId]);
+                        console.error(`[ACRCloud] Track ${track.id} Error: ${result.error}`);
+                    }
+                }
+            }
+        })();
+
+        res.json(newRelease);
+    } catch (error: any) {
+        console.error('Create Release Error:', error);
+        res.status(500).json({ error: 'Failed to create release' });
     }
 });
 
