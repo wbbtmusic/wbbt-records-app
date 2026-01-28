@@ -1017,62 +1017,6 @@ app.post('/api/upload', authMiddleware, (req: any, res) => {
     }
 });
 
-app.post('/api/releases', authMiddleware, async (req: any, res) => {
-    try {
-        const releaseData = req.body;
-        const newRelease = {
-            ...releaseData,
-            id: `rel-${Date.now()}`,
-            userId: req.userId,
-            status: 'PENDING',
-            tracks: releaseData.tracks.map((t: any) => ({
-                ...t,
-                id: t.id || `trk-${Date.now()}-${Math.random()}`,
-                releaseId: `rel-${Date.now()}` // Will be fixed by createRelease
-            }))
-        };
-
-        sqlite.createRelease(newRelease);
-
-        // Background Job: Analyze Tracks with ACRCloud
-        // We do this AFTER response to keep UI fast
-        (async () => {
-            console.log(`[ACRCloud] Starting analysis for release ${newRelease.id}`);
-            for (const track of newRelease.tracks) {
-                if (!track.fileUrl) continue;
-
-                // File URL on server is usually like http://localhost:3030/uploads/file.mp3
-                // We need absolute path.
-                // Assuming fileUrl format: .../uploads/filename.mp3
-                const filename = path.basename(track.fileUrl);
-                const filePath = path.join(UPLOADS_DIR, filename);
-
-                if (fs.existsSync(filePath)) {
-                    // Create Pending Record
-                    const checkId = `cpy-${Date.now()}-${Math.random()}`;
-                    sqlite.run('INSERT INTO copyright_checks (id, track_id, status) VALUES (?, ?, ?)', [checkId, track.id, 'PENDING']);
-
-                    // Analyze
-                    const result = await acrCloudService.identify(filePath);
-
-                    if (result.success && result.data) {
-                        sqlite.run('UPDATE copyright_checks SET status = ?, match_data = ? WHERE id = ?',
-                            [result.data.status, JSON.stringify(result.data), checkId]);
-                        console.log(`[ACRCloud] Track ${track.id}: ${result.data.status}`);
-                    } else {
-                        sqlite.run('UPDATE copyright_checks SET status = ? WHERE id = ?', ['ERROR', checkId]);
-                        console.error(`[ACRCloud] Track ${track.id} Error: ${result.error}`);
-                    }
-                }
-            }
-        })();
-
-        res.json(newRelease);
-    } catch (error: any) {
-        console.error('Create Release Error:', error);
-        res.status(500).json({ error: 'Failed to create release' });
-    }
-});
 
 app.get('/api/files/:id', (req, res) => {
     const { id } = req.params;
@@ -1301,6 +1245,35 @@ app.post('/api/writers', authMiddleware, (req: any, res) => {
 
 // ==================== RELEASES ====================
 
+app.get('/api/tracks/:id/copyright', authMiddleware, (req: any, res) => {
+    const { id } = req.params;
+    try {
+        const check = sqlite.db.prepare('SELECT * FROM copyright_checks WHERE track_id = ? ORDER BY id DESC LIMIT 1').get(id) as any;
+
+        if (!check) {
+            return res.json(null);
+        }
+
+        // Parse match_data if present
+        if (check.match_data) {
+            try {
+                check.matchData = JSON.parse(check.match_data);
+            } catch (e) {
+                check.matchData = {};
+            }
+        }
+
+        res.json({
+            status: check.status,
+            matchData: check.matchData,
+            checks: check // Include full object if needed
+        });
+    } catch (error) {
+        console.error('Error fetching copyright status:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Helper to format release with tracks
 const formatRelease = (release: any) => {
     const tracks = sqlite.getTracksByRelease(release.id) as any[];
@@ -1371,6 +1344,55 @@ const formatRelease = (release: any) => {
     };
 };
 
+app.post('/api/tracks/:id/scan', authMiddleware, async (req: any, res) => {
+    const { id } = req.params;
+    try {
+        const track = sqlite.db.prepare('SELECT * FROM tracks WHERE id = ?').get(id) as any;
+        if (!track) return res.status(404).json({ error: 'Track not found' });
+
+        if (!track.file_url) return res.status(400).json({ error: 'No audio file associated with this track' });
+
+        const fileId = track.file_url.split('/').pop();
+        if (!fileId) return res.status(400).json({ error: 'Invalid file URL' });
+
+        const file = sqlite.getFileById(fileId) as any;
+        if (!file) return res.status(404).json({ error: 'File record not found' });
+
+        const filePath = path.join(UPLOADS_DIR, file.stored_name);
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'Audio file not found on disk' });
+        }
+
+        // Trigger Analysis
+        const checkId = `cpy-man-${Date.now()}`;
+        sqlite.run('INSERT INTO copyright_checks (id, track_id, status) VALUES (?, ?, ?)', [checkId, id, 'PENDING']);
+
+        // Async processing
+        (async () => {
+            console.log(`[ACR-Manual] Analyzing ${filePath}`);
+            const result = await acrCloudService.identify(filePath);
+
+            let status = 'NO_MATCH';
+            if (result.success && result.data && result.data.status && result.data.status.code === 0 && result.data.metadata && result.data.metadata.music && result.data.metadata.music.length > 0) {
+                status = 'MATCH';
+            } else if (!result.success) {
+                status = 'ERROR';
+            }
+
+            sqlite.run('UPDATE copyright_checks SET status = ?, match_data = ? WHERE id = ?',
+                [status, JSON.stringify(result.data || {}), checkId]);
+            console.log(`[ACR-Manual] Result for ${track.title}: ${status}`);
+        })();
+
+        res.json({ success: true, status: 'PENDING' });
+
+    } catch (error) {
+        console.error('Scan Error:', error);
+        res.status(500).json({ error: 'Scan failed' });
+    }
+});
+
 app.get('/api/releases', authMiddleware, (req: any, res) => {
     const user = sqlite.getUserById(req.userId) as any;
     let releases: any[];
@@ -1429,6 +1451,60 @@ app.post('/api/releases', authMiddleware, (req: any, res) => {
         originalReleaseDate: data.originalReleaseDate,
         confirmations: data.confirmations
     });
+
+    // Background Job: Analyze Tracks with ACRCloud
+    (async () => {
+        try {
+            console.log(`[ACR] Starting analysis for release ${releaseId}`);
+            for (let i = 0; i < (data.tracks || []).length; i++) {
+                const track = data.tracks[i];
+                // Only analyze if audio file is present
+                if (track.fileUrl) {
+                    const trackId = `track-${releaseId}-${i}`;
+
+                    // Extract File ID from URL
+                    const fileId = track.fileUrl.split('/').pop();
+                    if (!fileId) continue;
+
+                    // Get File Record
+                    const file = sqlite.getFileById(fileId) as any;
+                    if (!file) continue;
+
+                    // Determine upload path
+                    const filePath = path.join(UPLOADS_DIR, file.stored_name);
+
+                    if (fs.existsSync(filePath)) {
+                        // Create Pending Record
+                        const checkId = `chk-${Date.now()}-${i}`;
+                        sqlite.createCopyrightCheck({
+                            id: checkId,
+                            trackId: trackId,
+                            status: 'PENDING',
+                            matchData: '{}'
+                        });
+
+                        console.log(`[ACR] Analyzing ${track.title} (${fileId})...`);
+                        const result = await acrCloudService.identify(filePath);
+
+                        let status = 'NO_MATCH';
+                        // Check result.success and result.data
+                        if (result.success && result.data && result.data.status && result.data.status.code === 0 && result.data.metadata && result.data.metadata.music && result.data.metadata.music.length > 0) {
+                            status = 'MATCH';
+                        } else if (!result.success) {
+                            status = 'ERROR';
+                        }
+
+                        console.log(`[ACR] Result for ${track.title}: ${status}`);
+
+                        sqlite.run('UPDATE copyright_checks SET status = ?, match_data = ? WHERE id = ?',
+                            [status, JSON.stringify(result.data || {}), checkId]);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[ACR] Analysis Background Job Error', e);
+        }
+    })();
 
     // Create tracks
     for (let i = 0; i < (data.tracks || []).length; i++) {

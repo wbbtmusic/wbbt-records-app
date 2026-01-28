@@ -1,5 +1,4 @@
-// API Service - Replaces mockStore with real backend calls
-const API_BASE = '/api';
+const API_BASE = '/api'; // Always relative to current origin (proxied)
 
 const setToken = (token: string, remember: boolean = true) => {
     if (remember) {
@@ -120,6 +119,10 @@ export const apiService = {
         clearToken();
     },
 
+
+
+
+
     // Applications
     async submitApplication(userId: string, data: { bio: string; instagramUrl?: string; spotifyUrl?: string; soundcloudUrl?: string; demoTrackUrl: string }) {
         const res = await fetch(`${API_BASE}/applications`, {
@@ -148,6 +151,27 @@ export const apiService = {
 
         const data = await res.json();
         return data.releases;
+    },
+
+    async getReleaseById(id: string) {
+        const res = await fetch(`${API_BASE}/releases/${id}`, {
+            headers: authHeaders()
+        });
+
+        if (!res.ok) {
+            throw new Error('Failed to fetch release');
+        }
+
+        return await res.json();
+    },
+
+    async getTracksByRelease(releaseId: string) {
+        const res = await fetch(`${API_BASE}/releases/${releaseId}`, {
+            headers: authHeaders()
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.tracks || [];
     },
 
     async createRelease(release: any) {
@@ -207,6 +231,23 @@ export const apiService = {
 
         return await res.json();
     },
+
+    // Copyright
+    async getTrackCopyrightStatus(trackId: string) {
+        const res = await fetch(`${API_BASE}/tracks/${trackId}/copyright`, { headers: authHeaders() });
+        if (!res.ok) return null;
+        return res.json();
+    },
+
+    async scanTrack(trackId: string) {
+        const res = await fetch(`${API_BASE}/tracks/${trackId}/scan`, {
+            method: 'POST',
+            headers: authHeaders()
+        });
+        if (!res.ok) throw new Error('Scan failed');
+        return await res.json();
+    },
+
 
     async getAnalyticsExternal() {
         const res = await fetch(`${API_BASE}/analytics/external`, { headers: authHeaders() });
@@ -830,11 +871,12 @@ export const apiService = {
         return await res.json();
     },
 
+    // Notifications
     async getNotifications() {
         const res = await fetch(`${API_BASE}/notifications`, {
             headers: authHeaders()
         });
-        if (!res.ok) throw new Error('Failed to fetch notifications');
+        if (!res.ok) return [];
         const data = await res.json();
         return data.notifications;
     },
@@ -845,6 +887,7 @@ export const apiService = {
             headers: authHeaders()
         });
     },
+
 
     // ==================== PAYMENT METHODS ====================
     async getPaymentMethods() {

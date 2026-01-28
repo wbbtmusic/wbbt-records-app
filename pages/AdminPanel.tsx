@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { apiService } from '../services/apiService';
 import { Release } from '../types';
 import { Card, Button, Badge, Input } from '../components/ui.tsx';
-import { Check, X, ExternalLink, Inbox, Ban, UserCheck, DollarSign, Trash2, Users, Music, FileAudio, Filter, MessageSquare, Edit3, Save, Disc, ArrowUpRight, FileText, CloudLightning, Globe, Zap, Download, Upload, RefreshCw, Headphones, Youtube } from 'lucide-react';
+import { Check, X, ExternalLink, Inbox, Ban, UserCheck, DollarSign, Trash2, Users, Music, FileAudio, Filter, MessageSquare, Edit3, Save, Disc, ArrowUpRight, FileText, CloudLightning, Globe, Zap, Download, Upload, RefreshCw, Headphones, Youtube, Search, Shield, HelpCircle, Loader } from 'lucide-react';
 import { List, Grid } from 'lucide-react';
 import Avatar from '../components/Avatar'; // Imported Avatar
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -22,6 +22,7 @@ const AdminPanel: React.FC = () => {
     const [selectedRelease, setSelectedRelease] = useState<Release | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [copyrights, setCopyrights] = useState<any>({}); // Store copyright data per track
 
     // Catalog filter
     const [catalogFilter, setCatalogFilter] = useState('all');
@@ -39,6 +40,7 @@ const AdminPanel: React.FC = () => {
     const [editingTrack, setEditingTrack] = useState<any>(null);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [viewingWithdrawal, setViewingWithdrawal] = useState<any>(null);
+    const [inspectingTrack, setInspectingTrack] = useState<any>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [detailView, setDetailView] = useState<'view' | 'edit'>('view');
 
@@ -102,6 +104,30 @@ const AdminPanel: React.FC = () => {
             loadUserSocialAccounts(selectedUser.id);
         }
     }, [userDetails]);
+
+    // Load copyrights when release is selected
+    useEffect(() => {
+        if (selectedRelease) {
+            const loadCopyrights = async () => {
+                if (!selectedRelease.tracks) return;
+                const newCopyrights: any = {};
+                for (const track of selectedRelease.tracks) {
+                    try {
+                        const status = await apiService.getTrackCopyrightStatus(track.id);
+                        if (status) {
+                            newCopyrights[track.id] = status;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load copyright for track', track.id, e);
+                    }
+                }
+                setCopyrights(newCopyrights);
+            };
+            loadCopyrights();
+        } else {
+            setCopyrights({});
+        }
+    }, [selectedRelease]);
 
     const [userSocialAccounts, setUserSocialAccounts] = useState<any[]>([]);
     const [newAccountForm, setNewAccountForm] = useState({ platform: 'spotify', url: '', name: '' });
@@ -383,6 +409,26 @@ const AdminPanel: React.FC = () => {
         loadData();
         setSelectedRelease(null);
     }, [tab]);
+
+    // Load copyrights when a release is selected
+    useEffect(() => {
+        if (selectedRelease && selectedRelease.tracks) {
+            setCopyrights({});
+            loadCopyrightsForRelease(selectedRelease);
+        }
+    }, [selectedRelease]);
+
+    const loadCopyrightsForRelease = async (release: Release) => {
+        if (!release.tracks) return;
+        const copyrightData: any = {};
+        for (const t of release.tracks) {
+            try {
+                const check = await apiService.getTrackCopyrightStatus(t.id);
+                if (check) copyrightData[t.id] = check;
+            } catch (e) { }
+        }
+        setCopyrights(copyrightData);
+    };
 
     const handleAppAction = async (userId: string, approve: boolean) => {
         setActionLoading(true);
@@ -1200,8 +1246,59 @@ const AdminPanel: React.FC = () => {
                                                     <span className="text-xs text-[#888] font-bold uppercase tracking-wider bg-[#222] px-2 py-1 rounded">Track {i + 1}</span>
                                                     {t.isExplicit && <span className="text-xs text-red-400 border border-red-900/50 bg-red-900/10 px-2 py-1 rounded font-bold">EXPLICIT</span>}
                                                     <span className="text-xs text-[#888] border border-[#333] px-2 py-1 rounded uppercase bg-[#181818]">{t.language}</span>
+                                                    {copyrights[t.id]?.status === 'MATCH' && (
+                                                        <span className="text-xs text-red-400 border border-red-900/50 bg-red-900/10 px-2 py-1 rounded font-bold flex items-center gap-1">
+                                                            <Ban size={10} /> COPYRIGHT MATCH
+                                                        </span>
+                                                    )}
+                                                    {copyrights[t.id]?.status === 'NO_MATCH' && (
+                                                        <span className="text-xs text-green-400 border border-green-900/50 bg-green-900/10 px-2 py-1 rounded font-bold flex items-center gap-1">
+                                                            <Check size={10} /> CLEAN
+                                                        </span>
+                                                    )}
+                                                    {(!copyrights[t.id] || !copyrights[t.id].status) && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 border border-gray-500/20 bg-gray-500/10 px-2 py-1 rounded font-bold flex items-center gap-1">
+                                                                Not Scanned
+                                                            </span>
+                                                            <Button
+                                                                variant="secondary"
+                                                                className="h-6 text-[10px] px-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20"
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    try {
+                                                                        const res = await apiService.scanTrack(t.id);
+                                                                        if (res.success && res.status === 'PENDING') {
+                                                                            setCopyrights(prev => ({
+                                                                                ...prev,
+                                                                                [t.id]: { status: 'PENDING' }
+                                                                            }));
+                                                                        }
+                                                                    } catch (err) {
+                                                                        alert('Scan failed to start');
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <RefreshCw size={10} className="mr-1" /> Scan Now
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                    {copyrights[t.id]?.status === 'PENDING' && (
+                                                        <span className="text-xs text-yellow-500 border border-yellow-500/20 bg-yellow-500/10 px-2 py-1 rounded font-bold flex items-center gap-1 animate-pulse">
+                                                            Checking...
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <h5 className="text-white font-bold text-2xl mb-1">{t.title} <span className="text-[#888] font-normal text-lg ml-2">{t.version}</span></h5>
+                                                <h5 className="text-white font-bold text-2xl mb-1 flex items-center gap-2">
+                                                    {t.title}
+                                                    <span className="text-[#888] font-normal text-lg">{t.version}</span>
+                                                    <button
+                                                        onClick={() => setInspectingTrack({ track: t, copyright: copyrights[t.id] })}
+                                                        className="ml-2 text-[10px] bg-[#222] hover:bg-[#333] border border-[#333] text-[#aaa] px-2 py-0.5 rounded transition-colors flex items-center gap-1"
+                                                    >
+                                                        <Search size={10} /> INSPECT
+                                                    </button>
+                                                </h5>
                                             </div>
                                             <div className="text-right flex flex-col items-end gap-2">
                                                 <span className="text-sm font-mono text-[#AAA] block tracking-wider">{t.isrc || 'No ISRC'}</span>
@@ -2662,6 +2759,115 @@ const AdminPanel: React.FC = () => {
                                             Copy Details
                                         </Button>
                                         <Button variant="ghost" className="flex-1" onClick={() => setViewingWithdrawal(null)}>Close</Button>
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {/* Inspector Modal */}
+                        {inspectingTrack && (
+                            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+                                <Card className="w-full max-w-2xl relative bg-[#050505] border border-[#333] shadow-2xl" onClick={e => e.stopPropagation()}>
+                                    <button onClick={() => setInspectingTrack(null)} className="absolute top-6 right-6 text-[#666] hover:text-white"><X size={20} /></button>
+
+                                    <div className="mb-6">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <span className="text-xs font-mono text-[#555] uppercase tracking-wider">{inspectingTrack.track.isrc || 'NO ISRC'}</span>
+                                            <span className="text-xs font-mono text-[#555]">ID: {inspectingTrack.track.id}</span>
+                                        </div>
+                                        <h3 className="text-2xl font-bold font-display text-white">{inspectingTrack.track.title}</h3>
+                                        <p className="text-lg text-[#888]">{inspectingTrack.track.version}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-6">
+                                            <div className="bg-[#111] border border-[#222] rounded-xl p-6">
+                                                <h4 className="text-sm font-bold text-white uppercase mb-4 flex items-center gap-2">
+                                                    <Shield size={16} className="text-indigo-500" /> Copyright Status
+                                                </h4>
+
+                                                <div className="flex flex-col gap-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[#888] text-sm">Status</span>
+                                                        <span className={`px-3 py-1 rounded text-sm font-bold flex items-center gap-2 border ${!inspectingTrack.copyright?.status ? 'bg-gray-500/10 border-gray-500/20 text-gray-400' :
+                                                            inspectingTrack.copyright?.status === 'MATCH' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                                                                inspectingTrack.copyright?.status === 'NO_MATCH' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                                                                    'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                                                            }`}>
+                                                            {!inspectingTrack.copyright?.status ? <HelpCircle size={14} /> :
+                                                                inspectingTrack.copyright?.status === 'MATCH' ? <Ban size={14} /> :
+                                                                    inspectingTrack.copyright?.status === 'NO_MATCH' ? <Check size={14} /> :
+                                                                        <Loader size={14} className="animate-spin" />}
+
+                                                            {inspectingTrack.copyright?.status || 'NOT SCANNED'}
+                                                        </span>
+                                                    </div>
+
+                                                    <Button
+                                                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                        onClick={async () => {
+                                                            try {
+                                                                const res = await apiService.scanTrack(inspectingTrack.track.id);
+                                                                if (res.success && res.status === 'PENDING') {
+                                                                    setCopyrights(prev => ({
+                                                                        ...prev,
+                                                                        [inspectingTrack.track.id]: { status: 'PENDING' }
+                                                                    }));
+                                                                    setInspectingTrack(prev => ({ ...prev, copyright: { ...prev.copyright, status: 'PENDING' } }));
+                                                                }
+                                                            } catch (e) {
+                                                                alert('Scan failed');
+                                                            }
+                                                        }}
+                                                    >
+                                                        <RefreshCw size={16} className="mr-2" />
+                                                        {inspectingTrack.copyright?.status ? 'RE-SCAN TRACK' : 'SCAN NOW'}
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {inspectingTrack.copyright?.matchData?.metadata?.music?.[0] && (
+                                                <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-3">
+                                                    <h5 className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">Match Detected</h5>
+                                                    <div className="space-y-2">
+                                                        <div>
+                                                            <span className="text-[#666] text-xs block">Original Title</span>
+                                                            <span className="text-white text-sm font-medium">{inspectingTrack.copyright.matchData.metadata.music[0].title}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[#666] text-xs block">Artist</span>
+                                                            <span className="text-white text-sm font-medium">{inspectingTrack.copyright.matchData.metadata.music[0].artists?.map((a: any) => a.name).join(', ')}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[#666] text-xs block">Album</span>
+                                                            <span className="text-white text-sm font-medium">{inspectingTrack.copyright.matchData.metadata.music[0].album?.name}</span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div>
+                                                                <span className="text-[#666] text-xs block">Label</span>
+                                                                <span className="text-white text-xs">{inspectingTrack.copyright.matchData.metadata.music[0].label}</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-[#666] text-xs block">Score</span>
+                                                                <span className="text-white text-xs font-mono">{inspectingTrack.copyright.matchData.metadata.music[0].score}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="bg-[#0A0A0A] border border-[#222] rounded-xl overflow-hidden flex flex-col h-full max-h-[400px]">
+                                            <div className="bg-[#181818] px-4 py-2 border-b border-[#222] flex justify-between items-center">
+                                                <span className="text-xs font-mono text-[#888]">RAW DATA</span>
+                                                <span className="text-[10px] text-[#555] font-mono">JSON</span>
+                                            </div>
+                                            <div className="overflow-auto flex-1 p-4">
+                                                <pre className="text-[10px] font-mono text-green-500/80 whitespace-pre-wrap break-all">
+                                                    {JSON.stringify(inspectingTrack.copyright || {}, null, 2)}
+                                                </pre>
+                                            </div>
+                                        </div>
                                     </div>
                                 </Card>
                             </div>
